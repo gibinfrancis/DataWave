@@ -20,7 +20,7 @@
         <!-- Direction section -->
         <!-- menu section title 1-->
         <div class="columns has-background-light">
-          <div class="column is-2">
+          <div class="column is-2 pr-0 pb-0">
             <span>
               <img src="../assets/images/direction_icon.png" width="20px" />
             </span>
@@ -161,9 +161,46 @@
           </div>
         </div>
         <!-- Control section end-->
+
+        <!-- Simulation section -->
+        <!-- menu Simulation title 1-->
+        <div class="columns has-background-light">
+          <div class="column is-2 pr-0 pb-0">
+            <span>
+              <img src="../assets/images/simulation_icon.png" width="20px" />
+            </span>
+          </div>
+          <div class="column is-10 pl-0 pt-2">
+            <h6><b>Simulation</b></h6>
+          </div>
+        </div>
+        <!-- menu Simulation content 1-->
+        <div class="columns has-background-light mb-0">
+          <div class="column is-12">
+            <div class="field">
+              <label class="label is-small">Name</label>
+              <div class="control">
+                <input
+                  class="input is-small"
+                  type="text"
+                  placeholder="Name for simulation"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="columns has-background-light bb-1-light">
+          <div class="column is-6">
+            <button class="button is-small is-fullwidth">Save</button>
+          </div>
+          <div class="column is-6">
+            <button class="button is-small is-fullwidth">Load</button>
+          </div>
+        </div>
+        <!-- Simulation section end -->
       </div>
       <!-- center pane -->
-      <div class="column is-7 pt-4">
+      <div class="column is-7 pt-0">
         <div class="tabs is-small is-boxed">
           <ul>
             <li class="is-active">
@@ -179,10 +216,13 @@
             rows="25"
           ></textarea>
         </div>
-
         <div>
-          <canvas id="sendMetricsChart" class="w-100"></canvas>
+          <p class="label is-small mt-2 mb-1">Logs</p>
+          <p class="content is-small">Logs</p>
         </div>
+        <!-- <div>
+          <canvas id="sendMetricsChart" class="w-100"></canvas>
+        </div> -->
       </div>
       <!-- right pane -->
       <div class="column is-3">
@@ -211,42 +251,68 @@
             </button>
           </div>
         </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="columns">
-              <div class="column is-6">Parameter 1</div>
+        <div class="card mb-2">
+          <div class="card-content p-2">
+            <div class="columns mb-0">
+              <div class="column is-6">
+                <div class="label is-small pt-2">Parameter 1</div>
+              </div>
               <div class="column is-6">
                 <div class="select is-small">
                   <select>
-                    <option value="RandomString" selected>Random-String</option>
-                    <option>Random-Int</option>
-                    <option>Random-Boolean</option>
-                    <option>Random-Double</option>
-                    <option>Seq-Int</option>
-                    <option>Seq-String</option>
-                    <option>Seq-Boolean</option>
-                    <option>Seq-Double</option>
-                    <option>Step-Int</option>
-                    <option>Step-String</option>
-                    <option>Step-Boolean</option>
-                    <option>Step-Double</option>
-                    <option>Step-by</option>
-                    <option>Guid</option>
-                    <option>Time-local</option>
-                    <option>Time-utc</option>
-                    <option>Time-local</option>
-                    <option>Time-epoch</option>
-                    <option>Time-epochmilli</option>
+                    <!-- string -->
+                    <option value="StringRandom" selected>String-Random</option>
+                    <option value="StringRandomList">String-RandomList</option>
+                    <option value="StringRandomList">
+                      String-SequenceList
+                    </option>
+                    <!-- int -->
+                    <option value="IntegerRandom">Integer-Random</option>
+                    <option value="IntegerRandomList">
+                      Integer-RandomList
+                    </option>
+                    <option value="IntegerRandomList">
+                      Integer-SequenceList
+                    </option>
+                    <option value="IntegerStepBy">Integer-StepBy</option>
+                    <!-- double -->
+                    <option value="DoubleRandom">Double-Random</option>
+                    <option value="DoubleRandomList">Double-RandomList</option>
+                    <option value="DoubleRandomList">
+                      Double-SequenceList
+                    </option>
+                    <option value="DoubleStepBy">Double-StepBy</option>
+                    <!-- bool -->
+                    <option value="BooleanStepBy">Boolean-Random</option>
+                    <option value="BooleanRandomList">
+                      Boolean-SequenceList
+                    </option>
+                    <!-- guid -->
+                    <option value="Guid">Guid</option>
+                    <!-- time -->
+                    <option value="TimeInUtc">Tine-InUtc</option>
+                    <option value="TimeInUtc">Tine-InUtc</option>
+                    <option value="TimeInEpoch">Tine-InEpoch</option>
+                    <option value="TimeInEpochMilli">Tine-InEpochMilli</option>
+                    <!-- Advanced -->
+                    <option value="Advanced">Advanced</option>
                   </select>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <br />
-        <div class="card">
-          <div class="card-content">
-            <div class="content">Parameter 2</div>
+            <div class="columns mb-0">
+              <div class="column is-6">
+                <input class="input is-small" type="text" placeholder="Min" />
+              </div>
+              <div class="column is-6">
+                <input class="input is-small" type="text" placeholder="Max" />
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-12">
+                <input class="input is-small" type="text" placeholder="List" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
