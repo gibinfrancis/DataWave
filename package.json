@@ -1,0 +1,39 @@
+{
+  "name": "iotsimulator",
+  "version": "1.0.0",
+  "description": "IoT simulator application to send and receive messages",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gibinfrancis/IoTSimulator.git"
+  },
+  "keywords": [
+    "IoT",
+    "Simulator",
+    "mqtt",
+    "event",
+    "hub",
+    "iot",
+    "hub",
+    "service",
+    "bus"
+  ],
+  "author": "Gibin Francis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gibinfrancis/IoTSimulator/issues"
+  },
+  "homepage": "https://github.com/gibinfrancis/IoTSimulator#readme",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.5",
+    "electron": "^23.1.4"
+  },
+  "dependencies": {
+    "bulma": "^0.9.4",
+    "chart.js": "^4.2.1"
+  }
+}
