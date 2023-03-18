@@ -1,0 +1,41 @@
+{
+  "Direction": "Sent/Receive",
+  "Service": "IoTHub/EventHub/ServiceBus/Mqtt",
+  "Settings": {
+    "TimeInSec": 5,
+    "NoOfMessages": 1,
+    "FixedCount": 500
+  },
+  "MessageBodyTemplate" : "",
+  "MessageHeaderTemplate" : "",
+  "Parameters" : [{
+    "Type" : "String,Int,Double,Boolean,Guid,Time",
+    "Generation" : "Random/Step/Sequence/Static",
+    "Min" : 1,
+    "max" : 5,
+    "stepBy" : 1,
+    "values" : "value1,value2,value3"
+  }]
+
+}
+
+
+<option value="RandomString" selected>Random-String</option>
+                    <option>Random-Int</option>
+                    <option>Random-Boolean</option>
+                    <option>Random-Double</option>
+                    <option>Seq-Int</option>
+                    <option>Seq-String</option>
+                    <option>Seq-Boolean</option>
+                    <option>Seq-Double</option>
+                    <option>Step-Int</option>
+                    <option>Step-String</option>
+                    <option>Step-Boolean</option>
+                    <option>Step-Double</option>
+                    <option>Step-by</option>
+                    <option>Guid</option>
+                    <option>Time-local</option>
+                    <option>Time-utc</option>
+                    <option>Time-local</option>
+                    <option>Time-epoch</option>
+                    <option>Time-epochmilli</option>
