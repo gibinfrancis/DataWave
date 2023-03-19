@@ -33,7 +33,15 @@
     "electron": "^23.1.4"
   },
   "dependencies": {
+    "@azure/event-hubs": "^5.9.0",
+    "@azure/eventhubs-checkpointstore-blob": "^1.0.1",
+    "@azure/service-bus": "^7.8.1",
+    "@azure/storage-blob": "^12.13.0",
+    "azure-iot-device": "^1.18.1",
+    "azure-iot-device-http": "^1.14.1",
+    "azure-iot-device-mqtt": "^1.16.1",
     "bulma": "^0.9.4",
-    "chart.js": "^4.2.1"
+    "chart.js": "^4.2.1",
+    "mqtt": "^4.3.7"
   }
 }

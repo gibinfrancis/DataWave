@@ -218,30 +218,69 @@
         </div>
         <div>
           <p class="label is-small mt-2 mb-1">Logs</p>
-          <p class="content is-small">Logs</p>
+        </div>
+        <div class="has-background-dark p-2" id="logWrap">
+          <p class="content is-small has-text-light">Dummy logs</p>
         </div>
         <!-- <div>
           <canvas id="sendMetricsChart" class="w-100"></canvas>
         </div> -->
       </div>
       <!-- right pane -->
-      <div class="column is-3">
-        <!-- menu section title -->
+      <div class="column is-3 has-background-light">
+        <!-- Connection section -->
+        <!-- menu Connection title 1-->
+        <div class="columns has-background-light">
+          <div class="column is-2 pr-0 pb-0">
+            <span>
+              <img src="../assets/images/simulation_icon.png" width="20px" />
+            </span>
+          </div>
+          <div class="column is-10 pl-0 pt-2">
+            <h6><b>Connection</b></h6>
+          </div>
+        </div>
+        <!-- menu Connection content 1-->
+        <div class="columns has-background-light mb-0">
+          <div class="column is-12">
+            <div class="field">
+              <label class="label is-small">Connection String</label>
+              <div class="control">
+                <input
+                  class="input is-small"
+                  type="text"
+                  placeholder="Connection String"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="columns has-background-light bb-1-light">
+          <div class="column is-12">
+            <div class="field">
+              <label class="label is-small">Storage Connection String</label>
+              <div class="control">
+                <input
+                  class="input is-small"
+                  type="text"
+                  placeholder="Storage Connection String"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation section end -->
+
+        <!-- menu section title -->
+        <div class="columns has-background-light">
           <div class="column is-2">
             <span>
               <img src="../assets/images/param_icon.png" width="20px" />
             </span>
           </div>
-          <div class="column is-6 pl-0 pt-2">
+          <div class="column is-8 pl-0 pt-2">
             <h6><b>Parameters</b></h6>
-          </div>
-          <div class="column is-2">
-            <button class="button is-small is-fullwidth">
-              <span>
-                <img src="../assets/images/collapse_icon.png" width="20px" />
-              </span>
-            </button>
           </div>
           <div class="column is-2">
             <button class="button is-small is-fullwidth">

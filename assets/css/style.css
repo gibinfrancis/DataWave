@@ -13,3 +13,8 @@
 .w-100 {
   width: 100%;
 }
+
+#logWrap {
+  height: 200px;
+  overflow-y: auto;
+}
