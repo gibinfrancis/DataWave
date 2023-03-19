@@ -16,7 +16,7 @@
     <!-- main area -->
     <div class="columns">
       <!-- left pane -->
-      <div class="column is-2">
+      <div class="column is-2 has-background-light">
         <!-- Direction section -->
         <!-- menu section title 1-->
         <div class="columns has-background-light">
@@ -32,10 +32,20 @@
         <!-- menu section content 1-->
         <div class="columns has-background-light bb-1-light">
           <div class="column is-6">
-            <button class="button is-small is-link is-fullwidth">Send</button>
+            <button
+              id="dir_Send_btn"
+              class="dir_btn button is-small is-link is-fullwidth"
+            >
+              Send
+            </button>
           </div>
           <div class="column is-6">
-            <button class="button is-small is-fullwidth">Receive</button>
+            <button
+              id="dir_Receive_btn"
+              class="dir_btn button is-small is-fullwidth"
+            >
+              Receive
+            </button>
           </div>
         </div>
         <!-- Direction section end -->
@@ -56,20 +66,38 @@
         <!-- menu section content 2-->
         <div class="columns has-background-light mb-0">
           <div class="column is-6">
-            <button class="button is-small is-link is-fullwidth">
+            <button
+              id="serv_iothub_btn"
+              class="serv_btn button is-small is-link is-fullwidth"
+            >
               Iot Hub
             </button>
           </div>
           <div class="column is-6">
-            <button class="button is-small is-fullwidth">Event Hub</button>
+            <button
+              id="serv_eventhub_btn"
+              class="serv_btn button is-small is-fullwidth"
+            >
+              Event Hub
+            </button>
           </div>
         </div>
         <div class="columns has-background-light bb-1-light">
           <div class="column is-6">
-            <button class="button is-small is-fullwidth">Service Bus</button>
+            <button
+              id="serv_servicebus_btn"
+              class="serv_btn button is-small is-fullwidth"
+            >
+              Service Bus
+            </button>
           </div>
           <div class="column is-6">
-            <button class="button is-small is-fullwidth">MQTT</button>
+            <button
+              id="serv_mqtt_btn"
+              class="serv_btn button is-small is-fullwidth"
+            >
+              MQTT
+            </button>
           </div>
         </div>
         <!-- Service section end-->
@@ -233,7 +261,7 @@
         <div class="columns has-background-light">
           <div class="column is-2 pr-0 pb-0">
             <span>
-              <img src="../assets/images/simulation_icon.png" width="20px" />
+              <img src="../assets/images/connection_icon.png" width="20px" />
             </span>
           </div>
           <div class="column is-10 pl-0 pt-2">
@@ -357,6 +385,6 @@
       </div>
     </div>
   </body>
-  <script defer src="render.js"></script>
-  <script defer src="ChartService.js"></script>
+  <script defer src="index.js"></script>
+  <script defer src="chartService.js"></script>
 </html>

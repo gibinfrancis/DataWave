@@ -1,47 +1,104 @@
-// Modules to control application life and create native browser window
-const { app, BrowserWindow } = require("electron");
+//const AddClass = require("../src/Services/commonService");
+//import { AddClass, RemoveClass } from "./Services/commonService";
 
-const path = require("path");
-
-const createWindow = () => {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 600,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  });
-
-  // and load the index.html of the app.
-  mainWindow.loadFile("src/index.html");
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+//variables
+var SettingsJson = {
+  direction: "sent", //sent/receive
+  service: "iothub", //iothub/eventhub/servicebus/mqtt
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on("activate", () => {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+//direction send button
+//click event
+document.querySelector("#dir_Send_btn").addEventListener("click", () => {
+  SettingsJson.direction = "sent";
+  RemoveClass("#dir_Receive_btn", "is-link");
+  AddClass("#dir_Send_btn", "is-link");
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+//direction receive button
+//click event
+document.querySelector("#dir_Receive_btn").addEventListener("click", () => {
+  SettingsJson.direction = "receive";
+  RemoveClass("#dir_Send_btn", "is-link");
+  AddClass("#dir_Receive_btn", "is-link");
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+//service iothub button
+//click event
+document.querySelector("#serv_iothub_btn").addEventListener("click", () => {
+  SettingsJson.service = "iothub";
+  RemoveClass(".serv_btn", "is-link");
+  AddClass("#serv_iothub_btn", "is-link");
+});
+
+//service eventhub button
+//click event
+document.querySelector("#serv_eventhub_btn").addEventListener("click", () => {
+  SettingsJson.service = "eventhub";
+  RemoveClass(".serv_btn", "is-link");
+  AddClass("#serv_eventhub_btn", "is-link");
+});
+
+//service servicebus button
+//click event
+document.querySelector("#serv_servicebus_btn").addEventListener("click", () => {
+  SettingsJson.service = "servicebus";
+  RemoveClass(".serv_btn", "is-link");
+  AddClass("#serv_servicebus_btn", "is-link");
+});
+
+//service mqtt button
+//click event
+document.querySelector("#serv_mqtt_btn").addEventListener("click", () => {
+  SettingsJson.service = "mqtt";
+  RemoveClass(".serv_btn", "is-link");
+  AddClass("#serv_mqtt_btn", "is-link");
+});
+
+function replaceMe(template, data) {
+  const pattern = /{\s*(\w+?)\s*}/g; // {property}
+  return template.replace(pattern, (_, token) => data[token] || "");
+}
+
+const html = `
+    <div>
+      <h4>{title}</h4>
+      <p>My name is {name}</p>
+      <img src="{url}" />
+    </div>
+  `;
+
+const data = {
+  title: "My Profile",
+  name: "John Smith",
+  url: "http://images/john.jpeg",
+};
+
+replaceMe(html, data);
+
+//common services
+
+function AddClass(item, className) {
+  if (item.startsWith("#")) {
+    var myElement = document.querySelector(item);
+    myElement.classList.add(className);
+  } else if (item.startsWith(".")) {
+    const elements = document.querySelectorAll(item);
+    elements.forEach((element) => {
+      element.classList.add(className);
+    });
+  }
+}
+
+//Remove class from element
+function RemoveClass(item, className) {
+  if (item.startsWith("#")) {
+    var myElement = document.querySelector(item);
+    myElement.classList.remove(className);
+  } else if (item.startsWith(".")) {
+    const elements = document.querySelectorAll(item);
+    elements.forEach((element) => {
+      element.classList.remove(className);
+    });
+  }
+}
