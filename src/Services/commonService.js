@@ -15,9 +15,27 @@ function generateTextForPlaceholders(placeholders) {
   placeholders.forEach((placeholder) => {
     switch (placeholder.type) {
       //on default random string
-      case "stringrandom": {
-        data[placeholder.id] = generateRandomString(5);
+      case "stringRandom": {
+        let randomLength = generateRandomNumber(placeholder.param1, placeholder.param2);
+        data[placeholder.id] = generateRandomString(randomLength);
       }
+      case "stringRandomList": {}
+      case "stringSequenceList": {}
+      case "integerRandom": {}
+      case "integerRandomList": {}
+      case "integerSequenceList": {}
+      case "integerStepBy": {}
+      case "doubleRandom": {}
+      case "doubleRandomList": {}
+      case "doubleSequenceList": {}
+      case "doubleStepBy": {}
+      case "booleanRandom": {}
+      case "booleanSequenceList": {}
+      case "guid": {}
+      case "timeInUtc": {}
+      case "timeInLocal": {}
+      case "timeInEpoch": {}
+      case "timeInEpochMilli": {}
       default: {
         data[placeholder.id] = generateRandomString(5);
       }
@@ -42,6 +60,24 @@ function generateRandomString(length) {
   return result;
 }
 
+
+//generate random integer
+function generateRandomNumber(min = 5, max = 10) {
+
+  // find diff
+  let difference = max - min;
+
+  // generate random number 
+  let rand = Math.random();
+
+  // multiply with difference 
+  rand = Math.floor( rand * difference);
+
+  // add with min value 
+  rand = rand + min;
+
+  return rand;
+}
 
 
 

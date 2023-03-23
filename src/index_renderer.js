@@ -45,6 +45,7 @@ function placeholderGenButtonClickHandler() {
 
   //iterate through all placeholders
   placeholders.forEach((placeholder) => {
+    const phType = "stringRandom";
     //check if the placeholder is already present
     if ($("#ph_" + placeholder).length) return;
     //create a new div element to placed with placeholder card template
@@ -52,7 +53,7 @@ function placeholderGenButtonClickHandler() {
     //prepare placeholder object for adding to list
     var phObj = {
       id: placeholder,
-      type: "stringrandom",
+      type: phType,
     };
     //append the placeholder card with placeholder name
     childElement.innerHTML = phCardTemplate.replaceAll(
@@ -65,6 +66,9 @@ function placeholderGenButtonClickHandler() {
     //adding the change event to drop down
     $("#ph_opt_" + placeholder + "_sel").change(genOptionDropdownClickHandler);
 
+    //update params within placeholder
+    updatePlaceholderGenParams(placeholder, phType);
+
     //adding the placeholder to config
     SettingsJson.placeholders.push(phObj);
   });
@@ -74,16 +78,44 @@ function placeholderGenButtonClickHandler() {
 //---PLACEHOLDER GEN OPTION DROPDOWN SELECT------------
 //-----------------------------------------------------
 function genOptionDropdownClickHandler() {
-  var type = $("option:selected", this)
-    .text()
-    .replaceAll("-", "")
-    .toLowerCase();
+  var type = $("option:selected", this).val();
   //get the placeholder name
   const phName = $(this).data("name");
   //get the placeholder index from the settings json
   objIndex = SettingsJson.placeholders.findIndex((obj) => obj.id == phName);
   //update the configuration
   SettingsJson.placeholders[objIndex].type = type;
+  //update params within placeholder
+  updatePlaceholderGenParams(phName, type);
+
+  console.log(SettingsJson.placeholders);
+}
+
+//update placeholder generation items parameters
+function updatePlaceholderGenParams(phName, type) {
+  //get the placeholder index from the settings json
+  phGenObjIndex = phGenOptions.findIndex((obj) => obj.name == type);
+
+  phGenOptions[phGenObjIndex].param1 == null &&
+  phGenOptions[phGenObjIndex].param2 == null
+    ? $("#ph_" + phName + "_txt1")
+        .parent()
+        .parent()
+        .hide()
+    : $("#ph_" + phName + "_txt1")
+        .parent()
+        .parent()
+        .show();
+
+  phGenOptions[phGenObjIndex].param3 == null
+    ? $("#ph_" + phName + "_txt3")
+        .parent()
+        .parent()
+        .hide()
+    : $("#ph_" + phName + "_txt3")
+        .parent()
+        .parent()
+        .show();
 }
 
 //-----------------------------------------------------
@@ -128,9 +160,24 @@ async function startButtonClickHandler() {
 
   //updating template settings
   SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
+  //update placeholder generation parameters to settings
+  updatePhGenParametersToSettings(SettingsJson.placeholders);
+
+  console.log(SettingsJson.placeholders);
 
   //invoke main service to start simulation
-  await window.api.startIoTHubSimulation(SettingsJson);
+  //await window.api.startIoTHubSimulation(SettingsJson);
+}
+
+function updatePhGenParametersToSettings(placeholders) {
+  for (var i = 0; i < placeholders.length; i++) {
+    placeholders[i].param1 =
+      $("#ph_" + placeholders[i].id + "_txt1").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt1").val().trim();
+    placeholders[i].param2 =
+    $("#ph_" + placeholders[i].id + "_txt2").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt2").val().trim();
+    placeholders[i].param3 =
+    $("#ph_" + placeholders[i].id + "_txt3").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt3").val().trim();
+  }
 }
 
 //-----------------------------------------------------
@@ -184,32 +231,31 @@ const phCardTemplate = `
         <div class="select is-small">
           <select id="ph_opt_{{placeholderName}}_sel" data-name="{{placeholderName}}">
             <!-- string -->
-            <option value="StringRandom" selected>String-Random</option>
-            <option value="StringRandomList">String-RandomList</option>
-            <option value="StringRandomList">String-SequenceList</option>
+            <option value="stringRandom" selected>String-Random</option>
+            <option value="stringRandomList">String-RandomList</option>
+            <option value="stringSequenceList">String-SequenceList</option>
             <!-- int -->
-            <option value="IntegerRandom">Integer-Random</option>
-            <option value="IntegerRandomList">Integer-RandomList
-            </option>
-            <option value="IntegerRandomList">Integer-SequenceList</option>
-            <option value="IntegerStepBy">Integer-StepBy</option>
+            <option value="integerRandom">Integer-Random</option>
+            <option value="integerRandomList">Integer-RandomList</option>
+            <option value="integerSequenceList">Integer-SequenceList</option>
+            <option value="integerStepBy">Integer-StepBy</option>
             <!-- double -->
-            <option value="DoubleRandom">Double-Random</option>
-            <option value="DoubleRandomList">Double-RandomList</option>
-            <option value="DoubleRandomList">Double-SequenceList</option>
-            <option value="DoubleStepBy">Double-StepBy</option>
+            <option value="doubleRandom">Double-Random</option>
+            <option value="doubleRandomList">Double-RandomList</option>
+            <option value="doubleSequenceList">Double-SequenceList</option>
+            <option value="doubleStepBy">Double-StepBy</option>
             <!-- bool -->
-            <option value="BooleanStepBy">Boolean-Random</option>
-            <option value="BooleanRandomList">Boolean-SequenceList</option>
+            <option value="booleanRandom">Boolean-Random</option>
+            <option value="booleanSequenceList">Boolean-SequenceList</option>
             <!-- guid -->
-            <option value="Guid">Guid</option>
+            <option value="guid">Guid</option>
             <!-- time -->
-            <option value="TimeInUtc">Time-InUtc</option>
-            <option value="TimeInUtc">Time-InUtc</option>
-            <option value="TimeInEpoch">Time-InEpoch</option>
-            <option value="TimeInEpochMilli">Time-InEpochMilli</option>
+            <option value="timeInUtc">Time-InUtc</option>
+            <option value="timeInLocal">Time-InLocal</option>
+            <option value="timeInEpoch">Time-InEpoch</option>
+            <option value="timeInEpochMilli">Time-InEpochMilli</option>
             <!-- Advanced -->
-            <option value="Advanced">Advanced</option>
+            <option value="advanced">Advanced</option>
           </select>
         </div>
       </div>
@@ -222,7 +268,7 @@ const phCardTemplate = `
         <input class="input is-small" id="ph_{{placeholderName}}_txt2" type="text" placeholder="Max" />
       </div>
     </div>
-    <div class="columns">
+    <div class="columns mb-0">
       <div class="column is-12">
         <input class="input is-small" id="ph_{{placeholderName}}_txt3" type="text" placeholder="List" />
       </div>
@@ -230,3 +276,83 @@ const phCardTemplate = `
   </div>          
   </div>
   `;
+
+var phGenOptions = [
+  {
+    name: "stringRandom",
+    param1: "Min length",
+    param2: "Max length",
+  },
+  {
+    name: "stringRandomList",
+    param3: "List - Comma separated string",
+  },
+  {
+    name: "stringSequenceList",
+    param3: "List - Comma separated string",
+  },
+  {
+    name: "integerRandom",
+    param1: "Minimum",
+    param2: "Maximum",
+  },
+  {
+    name: "integerRandomList",
+    param3: "List - Comma separated integer",
+  },
+  {
+    name: "integerSequenceList",
+    param3: "List - Comma separated integer",
+  },
+  {
+    name: "integerStepBy",
+    param1: "Starts with",
+    param2: "Increment by",
+  },
+  {
+    name: "doubleRandom",
+    param1: "Minimum",
+    param2: "Maximum",
+  },
+  {
+    name: "doubleRandomList",
+    param3: "List - Comma separated integer",
+  },
+  {
+    name: "doubleSequenceList",
+    param3: "List - Comma separated integer",
+  },
+  {
+    name: "doubleStepBy",
+    param1: "Starts with",
+    param2: "Increment by",
+  },
+  {
+    name: "booleanRandom",
+  },
+  {
+    name: "booleanSequenceList",
+    param3: "List - Comma separated true or false",
+  },
+  {
+    name: "guid",
+  },
+  {
+    name: "timeInUtc",
+    param3: "Date format",
+  },
+  {
+    name: "timeInLocal",
+    param3: "Date format",
+  },
+  {
+    name: "timeInEpoch",
+  },
+  {
+    name: "timeInEpochMilli",
+  },
+  {
+    name: "advanced",
+    param3: "Your EVAL statement",
+  },
+];
