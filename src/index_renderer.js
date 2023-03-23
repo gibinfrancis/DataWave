@@ -6,7 +6,7 @@ var SettingsJson = {
   messageHeaderTemplate: "",
   placeholders: [],
   connection: {},
-  protocol: "mqtt", //mqtt/amqp/mqttws/amqpws/http
+  protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
 };
 
 //when the document is ready
@@ -18,54 +18,8 @@ $(function () {
   //service button click binding
   $(".serv_btn").on("click", (e) => serviceButtonClickHandler(e));
 
-  //placeholders refresh button
-  //click event
-  $("#placehold_gen_btn").on("click", () => {
-    //get the template content
-    const templateString = $("#msg_body_txt").val();
-    //get placeholder strings from the template
-    const placeholders = templateString
-      .match(/\{\{(.+?)\}\}/g)
-      .map((placeholder) => placeholder.replace(/[{}]/g, ""));
-
-    //iterate through all placeholders
-    placeholders.forEach((placeholder) => {
-      //check if the parameter is already present
-      if ($("#param_" + placeholder).length) return;
-      //create a new div element to placed with param card template
-      const childElement = document.createElement("div");
-      //prepare param object for adding to list
-      var paramObj = {
-        id: placeholder,
-        type: "stringrandom",
-      };
-      //append the param card with parameter name
-      childElement.innerHTML = paramCardTemplate.replaceAll(
-        "{{ParamName}}",
-        placeholder
-      );
-      //adding the child
-      $("#paramWrap").append(childElement);
-      //adding the change event to drop down
-      $("#param_opt_" + placeholder + "_sel").change(function () {
-        var type = $("option:selected", this)
-          .text()
-          .replaceAll("-", "")
-          .toLowerCase();
-        //get the parameter name
-        const paramName = $(this).data("paramname");
-        //get the parameter index from the settings json
-        objIndex = SettingsJson.placeholders.findIndex(
-          (obj) => obj.id == paramName
-        );
-        //update the configuration
-        SettingsJson.placeholders[objIndex].type = type;
-      });
-
-      //adding the parameter to config
-      SettingsJson.placeholders.push(paramObj);
-    });
-  });
+  //placeholders refresh button click binding
+  $("#placehold_gen_btn").on("click", () => placeholderGenButtonClickHandler());
 
   //start button click event
   $("#cntl_start_btn").on("click", startButtonClickHandler);
@@ -78,6 +32,58 @@ $(function () {
 window.api.onLogUpdate((_event, message, type) => {
   printLogMessage(message, type)
 });
+
+
+//-----------------------------------------------------
+//-----------------PLACEHOLDER GEN BUTTON--------------
+//-----------------------------------------------------
+placeholderGenButtonClickHandler(){
+
+  //get the template content
+  const templateString = $("#msg_body_txt").val();
+  //get placeholder strings from the template
+  const placeholders = templateString
+    .match(/\{\{(.+?)\}\}/g)
+    .map((placeholder) => placeholder.replace(/[{}]/g, ""));
+
+  //iterate through all placeholders
+  placeholders.forEach((placeholder) => {
+    //check if the parameter is already present
+    if ($("#param_" + placeholder).length) return;
+    //create a new div element to placed with param card template
+    const childElement = document.createElement("div");
+    //prepare param object for adding to list
+    var paramObj = {
+      id: placeholder,
+      type: "stringrandom",
+    };
+    //append the param card with parameter name
+    childElement.innerHTML = paramCardTemplate.replaceAll(
+      "{{ParamName}}",
+      placeholder
+    );
+    //adding the child
+    $("#paramWrap").append(childElement);
+    //adding the change event to drop down
+    $("#param_opt_" + placeholder + "_sel").change(function () {
+      var type = $("option:selected", this)
+        .text()
+        .replaceAll("-", "")
+        .toLowerCase();
+      //get the parameter name
+      const paramName = $(this).data("paramname");
+      //get the parameter index from the settings json
+      objIndex = SettingsJson.placeholders.findIndex(
+        (obj) => obj.id == paramName
+      );
+      //update the configuration
+      SettingsJson.placeholders[objIndex].type = type;
+    });
+
+    //adding the parameter to config
+    SettingsJson.placeholders.push(paramObj);
+  });
+}
 
 
 //-----------------------------------------------------
@@ -128,7 +134,7 @@ async function startButtonClickHandler() {
   //updating template settings
   SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
 
-  //window.electronAPI.startSimulation(SettingsJson, generatedMessageBody);
+  //invoke main service to start simulation
   await window.api.startIoTHubSimulation(SettingsJson);
 
 }
