@@ -11,7 +11,6 @@ var SettingsJson = {
 
 //when the document is ready
 $(function () {
-
   //direction button click binding
   $(".dir_btn").on("click", (e) => directionButtonClickHandler(e));
 
@@ -30,15 +29,13 @@ $(function () {
 
 //on log update trigger
 window.api.onLogUpdate((_event, message, type) => {
-  printLogMessage(message, type)
+  printLogMessage(message, type);
 });
-
 
 //-----------------------------------------------------
 //-----------------PLACEHOLDER GEN BUTTON--------------
 //-----------------------------------------------------
-placeholderGenButtonClickHandler(){
-
+function placeholderGenButtonClickHandler() {
   //get the template content
   const templateString = $("#msg_body_txt").val();
   //get placeholder strings from the template
@@ -48,49 +45,51 @@ placeholderGenButtonClickHandler(){
 
   //iterate through all placeholders
   placeholders.forEach((placeholder) => {
-    //check if the parameter is already present
-    if ($("#param_" + placeholder).length) return;
-    //create a new div element to placed with param card template
+    //check if the placeholder is already present
+    if ($("#ph_" + placeholder).length) return;
+    //create a new div element to placed with placeholder card template
     const childElement = document.createElement("div");
-    //prepare param object for adding to list
-    var paramObj = {
+    //prepare placeholder object for adding to list
+    var phObj = {
       id: placeholder,
       type: "stringrandom",
     };
-    //append the param card with parameter name
-    childElement.innerHTML = paramCardTemplate.replaceAll(
-      "{{ParamName}}",
+    //append the placeholder card with placeholder name
+    childElement.innerHTML = phCardTemplate.replaceAll(
+      "{{placeholderName}}",
       placeholder
     );
     //adding the child
-    $("#paramWrap").append(childElement);
-    //adding the change event to drop down
-    $("#param_opt_" + placeholder + "_sel").change(function () {
-      var type = $("option:selected", this)
-        .text()
-        .replaceAll("-", "")
-        .toLowerCase();
-      //get the parameter name
-      const paramName = $(this).data("paramname");
-      //get the parameter index from the settings json
-      objIndex = SettingsJson.placeholders.findIndex(
-        (obj) => obj.id == paramName
-      );
-      //update the configuration
-      SettingsJson.placeholders[objIndex].type = type;
-    });
+    $("#placeholderWrap").append(childElement);
 
-    //adding the parameter to config
-    SettingsJson.placeholders.push(paramObj);
+    //adding the change event to drop down
+    $("#ph_opt_" + placeholder + "_sel").change(genOptionDropdownClickHandler);
+
+    //adding the placeholder to config
+    SettingsJson.placeholders.push(phObj);
   });
 }
 
+//-----------------------------------------------------
+//---PLACEHOLDER GEN OPTION DROPDOWN SELECT------------
+//-----------------------------------------------------
+function genOptionDropdownClickHandler() {
+  var type = $("option:selected", this)
+    .text()
+    .replaceAll("-", "")
+    .toLowerCase();
+  //get the placeholder name
+  const phName = $(this).data("name");
+  //get the placeholder index from the settings json
+  objIndex = SettingsJson.placeholders.findIndex((obj) => obj.id == phName);
+  //update the configuration
+  SettingsJson.placeholders[objIndex].type = type;
+}
 
 //-----------------------------------------------------
 //-----------------DIRECTION BUTTONS-------------------
 //-----------------------------------------------------
 function directionButtonClickHandler(e) {
-
   //get the button text as the chosen direction
   SettingsJson.direction = $(e.target)[0].innerText.toLowerCase();
 
@@ -99,14 +98,12 @@ function directionButtonClickHandler(e) {
 
   //add highlighted class to current button
   $("#" + e.target.id).addClass("is-link");
-
 }
 
 //-----------------------------------------------------
 //-----------------SERVICES BUTTONS--------------------
 //-----------------------------------------------------
 function serviceButtonClickHandler(e) {
-
   //get the button text as the chosen direction and remove spaces in it
   SettingsJson.service = $(e.target)[0]
     .innerText.toLowerCase()
@@ -117,14 +114,12 @@ function serviceButtonClickHandler(e) {
 
   //add highlighted class to current button
   $("#" + e.target.id).addClass("is-link");
-
 }
 
 //-----------------------------------------------------
 //-----------------START BUTTON------------------------
 //-----------------------------------------------------
 async function startButtonClickHandler() {
-
   //updating connection settings
   SettingsJson.connection = {
     connectionPram1: $("#con_string_txt1").val(),
@@ -136,18 +131,12 @@ async function startButtonClickHandler() {
 
   //invoke main service to start simulation
   await window.api.startIoTHubSimulation(SettingsJson);
-
 }
-
 
 //-----------------------------------------------------
 //-----------------STOP BUTTON-------------------------
 //-----------------------------------------------------
-function stopButtonClickHandler() {
-
-}
-
-
+function stopButtonClickHandler() {}
 
 function printLogMessage(logMessage, type) {
   //check the message view enabled
@@ -184,16 +173,16 @@ const data = {
 //------------------common services--------------------------------
 //-----------------------------------------------------------------
 
-const paramCardTemplate = `
-<div class="card mb-2 id="param_{{ParamName}}" ">
+const phCardTemplate = `
+<div class="card mb-2" id="ph_{{placeholderName}}">
   <div class="card-content p-2">
     <div class="columns mb-0">
       <div class="column is-6">
-        <div class="label is-small pt-2">{{ParamName}}</div>
+        <div class="label is-small pt-2">{{placeholderName}}</div>
       </div>
       <div class="column is-6">
         <div class="select is-small">
-          <select id="param_opt_{{ParamName}}_sel" data-paramname="{{ParamName}}">
+          <select id="ph_opt_{{placeholderName}}_sel" data-name="{{placeholderName}}">
             <!-- string -->
             <option value="StringRandom" selected>String-Random</option>
             <option value="StringRandomList">String-RandomList</option>
@@ -227,15 +216,15 @@ const paramCardTemplate = `
     </div>
     <div class="columns mb-0">
       <div class="column is-6">
-        <input class="input is-small" id="param_{{ParamName}}_txt1" type="text" placeholder="Min" />
+        <input class="input is-small" id="ph_{{placeholderName}}_txt1" type="text" placeholder="Min" />
       </div>
       <div class="column is-6">
-        <input class="input is-small" id="param_{{ParamName}}_txt2" type="text" placeholder="Max" />
+        <input class="input is-small" id="ph_{{placeholderName}}_txt2" type="text" placeholder="Max" />
       </div>
     </div>
     <div class="columns">
       <div class="column is-12">
-        <input class="input is-small" id="param_{{ParamName}}_txt3" type="text" placeholder="List" />
+        <input class="input is-small" id="ph_{{placeholderName}}_txt3" type="text" placeholder="List" />
       </div>
     </div>
   </div>          
