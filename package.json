@@ -42,6 +42,7 @@
     "azure-iot-device-mqtt": "^1.16.1",
     "bulma": "^0.9.4",
     "chart.js": "^4.2.1",
+    "jquery": "^3.6.4",
     "mqtt": "^4.3.7"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "NodeId": "{{NodeId}}",
+  "ApplicationUri": "{{ApplicationUri}}",
+  "DisplayName": "{{DisplayName}}",
+  "Value": {
+    "StatusCode": {
+      "Symbol": "{{Symbol}}",
+      "Code": "{{Code}}"
+    },
+    "SourceTimestamp": "{{SourceTimestamp}}"
+  }
+}
+
+

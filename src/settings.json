@@ -19,7 +19,6 @@
     }
   ]
 }
-
 // <option value="RandomString" selected>Random-String</option>
 //                     <option>Random-Int</option>
 //                     <option>Random-Boolean</option>

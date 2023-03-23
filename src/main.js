@@ -1,31 +1,48 @@
-// Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
+const startIoTHubSimulation = require('./Services/IoTHubService.js');
 const path = require("path");
+var mainWindow
 
 // Create the browser window.
 const createWindow = () => {
-  const mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 600,
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 1200,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true,
       //contextIsolation: false,
     },
+    icon: __dirname + "/assets/images/IoTSimulator.icns",
   });
+
+  //on the event of starting simulation
+  // ipcMain.on("startSimulation", (event, config, message) => {
+  //   //accept the event and cascade it back to respective service
+  //   //mainWindow.webContents.send(config.service + "Simulation", config, message);
+  //   startIoTHubMessageSimulation();
+  // });
+
+  // // ipcMain.on('counter-value', (_event, value) => {
+  // //   console.log(value) // will print value to Node console
+  // // })
 
   // and load the index.html of the app.
   mainWindow.loadFile("src/index.html");
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+
+  //iot hub simulation start handle
+  ipcMain.handle('startSimulation:IoTHub', async (event, SettingsJson) => startIoTHubSimulation(SettingsJson, mainWindow));
+
   createWindow();
 
   app.on("activate", () => {

@@ -1,103 +1,127 @@
-"use strict";
-
-// Choose a protocol by uncommenting one of these transports.
-const Protocol = require("azure-iot-device-mqtt").Mqtt;
-//const Protocol = require('azure-iot-device-http').Http;
-// const Protocol = require('azure-iot-device-mqtt').MqttWs;
-// const Protocol = require('azure-iot-device-amqp').AmqpWs;
-
+//const { ipcMain } = require("electron");
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
+const { generateTextForPlaceholders, replaceTemplateWithPlaceholder } = require('./commonService.js');
+var _client;
+var _settingsJson;
+var _mainWindow;
+//var _ipcRenderer;
 
-// String containing Hostname, Device Id & Device Key in the following formats:
-//  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
-const deviceConnectionString = process.env.IOTHUB_DEVICE_CONNECTION_STRING;
-let sendInterval;
+//start simulation based on the settings provided
+async function startIoTHubSimulation(SettingsJson, MainWindow) {
 
-function disconnectHandler() {
-  clearInterval(sendInterval);
-  sendInterval = null;
-  client.open().catch((err) => {
-    console.error(err.message);
-  });
+    _settingsJson = SettingsJson;
+    _mainWindow = MainWindow;
+
+    //get respective protocol
+    printLogMessage("Starting simulation", "details");
+    const Protocol = getProtocol(_settingsJson.protocol);
+
+    //create iot hub device client
+    printLogMessage("Trying to create client", "details");
+    _client = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
+
+    // Create a message and send it to the IoT Hub every two seconds
+    const genPlaceholders = generateTextForPlaceholders(_settingsJson.placeholders);
+
+    //replace the template with generated placeholder data
+    const data = replaceTemplateWithPlaceholder(_settingsJson.messageBodyTemplate, genPlaceholders);
+
+    //prepare message
+    const message = new Message(data)
+
+    //set properties
+    //message.properties.add("temperatureAlert", temperature > 28 ? "true" : "false");
+
+    //send event 
+    printLogMessage(message.getData(), "message");
+    await sendMessage(_client, message.getData());
+
+    //close client connection
+    await closeToIoTHubClient();
+    printLogMessage("Simulation completed", "message");
+
 }
 
-// The AMQP and HTTP transports have the notion of completing, rejecting or abandoning the message.
-// For example, this is only functional in AMQP and HTTP:
-// client.complete(msg, printResultFor('completed'));
-// If using MQTT calls to complete, reject, or abandon are no-ops.
-// When completing a message, the service that sent the C2D message is notified that the message has been processed.
-// When rejecting a message, the service that sent the C2D message is notified that the message won't be processed by the device. the method to use is client.reject(msg, callback).
-// When abandoning the message, IoT Hub will immediately try to resend it. The method to use is client.abandon(msg, callback).
-// MQTT is simpler: it accepts the message by default, and doesn't support rejecting or abandoning a message.
-function messageHandler(msg) {
-  console.log("Id: " + msg.messageId + " Body: " + msg.data);
-  client.complete(msg, printResultFor("completed"));
+
+//Connect to IoT Hub using the device connection string and protocol
+function connectToIoTHub(deviceConString, protocol) {
+    return new Promise((resolve, reject) => {
+        //create client
+        let client = Client.fromConnectionString(deviceConString, protocol);
+        //opens connection
+        client.open(err => {
+            if (err) {
+                printLogMessage("Client connection failed", "info");
+                printLogMessage(err, "details")
+                reject(err);
+            }
+            else {
+                printLogMessage("Client connected", "info");
+                resolve(client);
+            }
+
+        });
+    })
 }
 
-function generateMessage() {
-  const windSpeed = 10 + Math.random() * 4; // range: [10, 14]
-  const temperature = 20 + Math.random() * 10; // range: [20, 30]
-  const humidity = 60 + Math.random() * 20; // range: [60, 80]
-  const data = JSON.stringify({
-    deviceId: "myFirstDevice",
-    windSpeed: windSpeed,
-    temperature: temperature,
-    humidity: humidity,
-  });
-  const message = new Message(data);
-  message.properties.add(
-    "temperatureAlert",
-    temperature > 28 ? "true" : "false"
-  );
-  return message;
+//send message to IoT Hub
+function sendMessage(client, content) {
+    return new Promise((resolve, reject) => {
+        //prepare message
+        let message = new Message(content);
+        //send the message
+        client.sendEvent(message, (err, res) => {
+            if (err) {
+                printLogMessage("Error while sending message", "info");
+                printLogMessage(err, "details")
+                reject(err);
+            }
+            else {
+                printLogMessage("Telemetry message sent", "info");
+                printLogMessage("Message Status" + res, "details");
+                resolve(res);
+            }
+        });
+    });
 }
 
-function errorHandler(err) {
-  console.error(err.message);
+
+
+//Close connection to IoT Hub
+function closeToIoTHubClient() {
+    return new Promise((resolve, reject) => {
+        //close the connection
+        _client.close(err => {
+            if (err) {
+                printLogMessage("Error while closing connection", "info");
+                printLogMessage(err, "details")
+                reject(err);
+            }
+            else {
+                printLogMessage("Connection closed successfully", "info");
+                resolve(true);
+            }
+
+        });
+    })
 }
 
-function connectHandler() {
-  console.log("Client connected");
-  // Create a message and send it to the IoT Hub every two seconds
-  if (!sendInterval) {
-    sendInterval = setInterval(() => {
-      const message = generateMessage();
-      console.log("Sending message: " + message.getData());
-      client.sendEvent(message, printResultFor("send"));
-    }, 2000);
-  }
+//get the respective protocol object
+function getProtocol(protocol) {
+    if (protocol == "mqttws")
+        return require("azure-iot-device-mqtt").MqttWs;
+    else if (protocol == "http")
+        return require("azure-iot-device-http").Http;
+    else
+        return require("azure-iot-device-mqtt").Mqtt;
+
 }
 
-// fromConnectionString must specify a transport constructor, coming from any transport package.
-let client = Client.fromConnectionString(deviceConnectionString, Protocol);
-
-client.on("connect", connectHandler);
-client.on("error", errorHandler);
-client.on("disconnect", disconnectHandler);
-client.on("message", messageHandler);
-
-client.open().catch((err) => {
-  console.error("Could not connect: " + err.message);
-});
-
-// Helper function to print results in the console
-function printResultFor(op) {
-  return function printResult(err, res) {
-    if (err) console.log(op + " error: " + err.toString());
-    if (res) console.log(op + " status: " + res.constructor.name);
-  };
+//prints log message on both consoles
+function printLogMessage(message, type) {
+    _mainWindow.webContents.send("LogUpdate", message, type);
+    console.log(message);
 }
 
-var client = DeviceClient.fromConnectionString(connectionString, Mqtt);
-
-client.on("message", function (msg) {
-  console.log("Id: " + msg.messageId + " Body: " + msg.data);
-  client.complete(msg, function (err) {
-    if (err) {
-      console.error("complete error: " + err.toString());
-    } else {
-      console.log("complete sent");
-    }
-  });
-});
+module.exports = startIoTHubSimulation;

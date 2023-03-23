@@ -15,6 +15,37 @@
 }
 
 #logWrap {
-  height: 200px;
+  height: 275px;
   overflow-y: auto;
+}
+
+
+#logHeadingWrap .checkbox {
+  font-size: .75rem;
+}
+
+#paramWrap {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }
