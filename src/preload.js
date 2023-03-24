@@ -23,10 +23,13 @@ window.addEventListener("DOMContentLoaded", () => {
 contextBridge.exposeInMainWorld("api", {
 
   //start iot hub simulation
-  startIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("startSimulation:IoTHub", SettingsJson),
+  startIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("StartSimulation:IoTHub", SettingsJson),
 
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
+
+  //get generated message
+  getGeneratedMessage: (SettingsJson) => ipcRenderer.invoke("GenerateMessage", SettingsJson),
 
 
 });

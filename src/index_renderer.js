@@ -25,12 +25,47 @@ $(function () {
 
   //stop button click event
   $("#cntl_stop_btn").on("click", () => stopButtonClickHandler);
+
+  //view generated message button
+  $("#cntl_view_btn").on("click", viewButtonClickHandler);
+
+
 });
 
 //on log update trigger
 window.api.onLogUpdate((_event, message, type) => {
   printLogMessage(message, type);
 });
+
+
+//-----------------------------------------------------
+//-----------------VIEW BUTTON------------------------
+//-----------------------------------------------------
+async function viewButtonClickHandler() {
+
+  //prepare settings object
+  prepareSettings();
+
+  //invoke main service to view generated message
+  const genMessage = await window.api.getGeneratedMessage(SettingsJson);
+
+  printLogMessage(genMessage, "info");
+}
+
+//get the settings ready
+function prepareSettings() {
+  //updating connection settings
+  SettingsJson.connection = {
+    connectionPram1: $("#con_string_txt1").val(),
+    connectionPram2: $("#con_string_txt2").val(),
+  };
+
+  //updating template settings
+  SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
+  //update placeholder generation parameters to settings
+  updatePhGenParametersToSettings(SettingsJson.placeholders);
+
+}
 
 //-----------------------------------------------------
 //-----------------PLACEHOLDER GEN BUTTON--------------
@@ -97,25 +132,25 @@ function updatePlaceholderGenParams(phName, type) {
   phGenObjIndex = phGenOptions.findIndex((obj) => obj.name == type);
 
   phGenOptions[phGenObjIndex].param1 == null &&
-  phGenOptions[phGenObjIndex].param2 == null
+    phGenOptions[phGenObjIndex].param2 == null
     ? $("#ph_" + phName + "_txt1")
-        .parent()
-        .parent()
-        .hide()
+      .parent()
+      .parent()
+      .hide()
     : $("#ph_" + phName + "_txt1")
-        .parent()
-        .parent()
-        .show();
+      .parent()
+      .parent()
+      .show();
 
   phGenOptions[phGenObjIndex].param3 == null
     ? $("#ph_" + phName + "_txt3")
-        .parent()
-        .parent()
-        .hide()
+      .parent()
+      .parent()
+      .hide()
     : $("#ph_" + phName + "_txt3")
-        .parent()
-        .parent()
-        .show();
+      .parent()
+      .parent()
+      .show();
 }
 
 //-----------------------------------------------------
@@ -152,18 +187,9 @@ function serviceButtonClickHandler(e) {
 //-----------------START BUTTON------------------------
 //-----------------------------------------------------
 async function startButtonClickHandler() {
-  //updating connection settings
-  SettingsJson.connection = {
-    connectionPram1: $("#con_string_txt1").val(),
-    connectionPram2: $("#con_string_txt2").val(),
-  };
 
-  //updating template settings
-  SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
-  //update placeholder generation parameters to settings
-  updatePhGenParametersToSettings(SettingsJson.placeholders);
-
-  console.log(SettingsJson.placeholders);
+  //prepare settings object
+  prepareSettings();
 
   //invoke main service to start simulation
   //await window.api.startIoTHubSimulation(SettingsJson);
@@ -174,16 +200,16 @@ function updatePhGenParametersToSettings(placeholders) {
     placeholders[i].param1 =
       $("#ph_" + placeholders[i].id + "_txt1").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt1").val().trim();
     placeholders[i].param2 =
-    $("#ph_" + placeholders[i].id + "_txt2").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt2").val().trim();
+      $("#ph_" + placeholders[i].id + "_txt2").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt2").val().trim();
     placeholders[i].param3 =
-    $("#ph_" + placeholders[i].id + "_txt3").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt3").val().trim();
+      $("#ph_" + placeholders[i].id + "_txt3").val().trim() == "" ? null : $("#ph_" + placeholders[i].id + "_txt3").val().trim();
   }
 }
 
 //-----------------------------------------------------
 //-----------------STOP BUTTON-------------------------
 //-----------------------------------------------------
-function stopButtonClickHandler() {}
+function stopButtonClickHandler() { }
 
 function printLogMessage(logMessage, type) {
   //check the message view enabled
@@ -351,8 +377,9 @@ var phGenOptions = [
   {
     name: "timeInEpochMilli",
   },
-  {
-    name: "advanced",
-    param3: "Your EVAL statement",
-  },
+  //wil be considering EVAL in future only
+  // {
+  //   name: "advanced",
+  //   param3: "Your EVAL statement",
+  // },
 ];

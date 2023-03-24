@@ -1,7 +1,7 @@
 //const { ipcMain } = require("electron");
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const { generateTextForPlaceholders, replaceTemplateWithPlaceholder } = require('./commonService.js');
+const { getPreparedMessage } = require('./commonService.js');
 var _client;
 var _settingsJson;
 var _mainWindow;
@@ -22,10 +22,7 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
     _client = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
 
     // Create a message and send it to the IoT Hub every two seconds
-    const genPlaceholders = generateTextForPlaceholders(_settingsJson.placeholders);
-
-    //replace the template with generated placeholder data
-    const data = replaceTemplateWithPlaceholder(_settingsJson.messageBodyTemplate, genPlaceholders);
+    const data = getPreparedMessage(_settingsJson);
 
     //prepare message
     const message = new Message(data)

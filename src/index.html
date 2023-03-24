@@ -1,357 +1,314 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IoT Simulator</title>
-    <!-- styles -->
-    <link rel="stylesheet" href="../node_modules/bulma/css/bulma.min.css" />
-    <link rel="stylesheet" href="../assets/css/style.css" />
-  </head>
 
-  <body class="m-5">
-    <!-- main area -->
-    <div class="columns">
-      <!-- left pane -->
-      <div class="column is-2 has-background-light">
-        <!-- Direction section -->
-        <!-- menu section title 1-->
-        <div class="columns has-background-light">
-          <div class="column is-2 pr-0 pb-0">
-            <span>
-              <img src="../assets/images/direction_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Direction</b></h6>
-          </div>
-        </div>
-        <!-- menu section content 1-->
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-6">
-            <button
-              id="dir_send_btn"
-              class="dir_btn button is-small is-link is-fullwidth"
-            >
-              Send
-            </button>
-          </div>
-          <div class="column is-6">
-            <button
-              id="dir_receive_btn"
-              class="dir_btn button is-small is-fullwidth"
-            >
-              Receive
-            </button>
-          </div>
-        </div>
-        <!-- Direction section end -->
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+  <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IoT Simulator</title>
+  <!-- styles -->
+  <link rel="stylesheet" href="../node_modules/bulma/css/bulma.min.css" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
 
-        <!-- Service section -->
-        <!-- menu section title 2-->
-        <div class="columns has-background-light">
-          <div class="column is-2">
-            <span>
-              <img src="../assets/images/services_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Service</b></h6>
-          </div>
+<body class="m-5">
+  <!-- main area -->
+  <div class="columns">
+    <!-- left pane -->
+    <div class="column is-2 has-background-light">
+      <!-- Direction section -->
+      <!-- menu section title 1-->
+      <div class="columns has-background-light">
+        <div class="column is-2 pr-0 pb-0">
+          <span>
+            <img src="../assets/images/direction_icon.png" width="20px" />
+          </span>
         </div>
-
-        <!-- menu section content 2-->
-        <div class="columns has-background-light mb-0">
-          <div class="column is-6">
-            <button
-              id="serv_iothub_btn"
-              class="serv_btn button is-small is-link is-fullwidth"
-            >
-              Iot Hub
-            </button>
-          </div>
-          <div class="column is-6">
-            <button
-              id="serv_eventhub_btn"
-              class="serv_btn button is-small is-fullwidth"
-            >
-              Event Hub
-            </button>
-          </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Direction</b></h6>
         </div>
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-6">
-            <button
-              id="serv_servicebus_btn"
-              class="serv_btn button is-small is-fullwidth"
-            >
-              Service Bus
-            </button>
-          </div>
-          <div class="column is-6">
-            <button
-              id="serv_mqtt_btn"
-              class="serv_btn button is-small is-fullwidth"
-            >
-              MQTT
-            </button>
-          </div>
-        </div>
-        <!-- Service section end-->
-
-        <!-- Settings section -->
-        <!-- menu settings title 2-->
-        <div class="columns has-background-light">
-          <div class="column is-2">
-            <span>
-              <img src="../assets/images/settings_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Settings</b></h6>
-          </div>
-        </div>
-        <!-- menu settings content 2-->
-        <div class="columns has-background-light mb-0">
-          <div class="column is-6">
-            <div class="field">
-              <label class="label is-small">Time in sec</label>
-              <div class="control">
-                <input class="input is-small" type="text" placeholder="5" />
-              </div>
-            </div>
-          </div>
-          <div class="column is-6">
-            <div class="field">
-              <label class="label is-small">No. of messages</label>
-              <div class="control">
-                <input class="input is-small" type="text" placeholder="1" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-6">
-            <div class="field">
-              <label class="label is-small">Fixed Count</label>
-              <div class="control">
-                <input class="input is-small" type="text" placeholder="0" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Settings section end-->
-
-        <!-- Controls section -->
-        <!-- menu Controls title 2-->
-        <div class="columns has-background-light">
-          <div class="column is-2">
-            <span>
-              <img src="../assets/images/options_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Controls</b></h6>
-          </div>
-        </div>
-        <!-- menu Controls content 2-->
-        <div class="columns has-background-light mb-0">
-          <div class="column is-4">
-            <div class="field">
-              <label class="label is-small">Success</label>
-              <label class="label has-text-success is-small">0</label>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <label class="label is-small">Failed</label>
-              <label class="label has-text-danger is-small">0</label>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <label class="label is-small">Total</label>
-              <label class="label has-text-dark is-small">0</label>
-            </div>
-          </div>
-        </div>
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-6">
-            <button
-              class="button is-small is-success is-fullwidth"
-              id="cntl_start_btn"
-            >
-              Start
-            </button>
-          </div>
-          <div class="column is-6">
-            <button
-              class="button is-small is-black is-fullwidth"
-              id="cntl_stop_btn"
-            >
-              Stop
-            </button>
-          </div>
-        </div>
-        <!-- Control section end-->
-
-        <!-- Simulation section -->
-        <!-- menu Simulation title 1-->
-        <div class="columns has-background-light">
-          <div class="column is-2 pr-0 pb-0">
-            <span>
-              <img src="../assets/images/simulation_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Simulation</b></h6>
-          </div>
-        </div>
-        <!-- menu Simulation content 1-->
-        <div class="columns has-background-light mb-0">
-          <div class="column is-12">
-            <div class="field">
-              <label class="label is-small">Name</label>
-              <div class="control">
-                <input
-                  class="input is-small"
-                  type="text"
-                  placeholder="Name for simulation"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-6">
-            <button class="button is-small is-fullwidth">Save</button>
-          </div>
-          <div class="column is-6">
-            <button class="button is-small is-fullwidth">Load</button>
-          </div>
-        </div>
-        <!-- Simulation section end -->
       </div>
-      <!-- center pane -->
-      <div class="column is-7 pt-0">
-        <div class="tabs is-small is-boxed">
-          <ul>
-            <li class="is-active">
-              <a>Message Body Template</a>
-            </li>
-            <li><a>Message Header Template</a></li>
-          </ul>
+      <!-- menu section content 1-->
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-6">
+          <button id="dir_send_btn" class="dir_btn button is-small is-link is-fullwidth">
+            Send
+          </button>
         </div>
-        <div class="mb-2">
-          <textarea
-            id="msg_body_txt"
-            class="textarea is-small"
-            placeholder="json template for your message nad wrap variables in {{}}"
-            rows="20"
-          ></textarea>
+        <div class="column is-6">
+          <button id="dir_receive_btn" class="dir_btn button is-small is-fullwidth">
+            Receive
+          </button>
         </div>
-        <div id="logHeadingWrap" class="columns mb-0">
-          <div class="column is-6">
-            <p class="label is-small mt-2 mb-1">Logs</p>
+      </div>
+      <!-- Direction section end -->
+
+      <!-- Service section -->
+      <!-- menu section title 2-->
+      <div class="columns has-background-light">
+        <div class="column is-2">
+          <span>
+            <img src="../assets/images/services_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Service</b></h6>
+        </div>
+      </div>
+
+      <!-- menu section content 2-->
+      <div class="columns has-background-light mb-0">
+        <div class="column is-6">
+          <button id="serv_iothub_btn" class="serv_btn button is-small is-link is-fullwidth">
+            Iot Hub
+          </button>
+        </div>
+        <div class="column is-6">
+          <button id="serv_eventhub_btn" class="serv_btn button is-small is-fullwidth">
+            Event Hub
+          </button>
+        </div>
+      </div>
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-6">
+          <button id="serv_servicebus_btn" class="serv_btn button is-small is-fullwidth">
+            Service Bus
+          </button>
+        </div>
+        <div class="column is-6">
+          <button id="serv_mqtt_btn" class="serv_btn button is-small is-fullwidth">
+            MQTT
+          </button>
+        </div>
+      </div>
+      <!-- Service section end-->
+
+      <!-- Settings section -->
+      <!-- menu settings title 2-->
+      <div class="columns has-background-light">
+        <div class="column is-2">
+          <span>
+            <img src="../assets/images/settings_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Settings</b></h6>
+        </div>
+      </div>
+      <!-- menu settings content 2-->
+      <div class="columns has-background-light mb-0">
+        <div class="column is-6">
+          <div class="field">
+            <label class="label is-small">Time in sec</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="5" />
+            </div>
           </div>
-          <div class="column is-6">
-            <label class="checkbox is-pulled-right mr-3">
-              <input type="checkbox" checked id="log_msg_check" />
-              Messages
-            </label>
-            <label class="checkbox is-pulled-right mr-3">
-              <input type="checkbox" id="log_detail_check" />
-              Detailed Logs
-            </label>
-            <label class="checkbox is-pulled-right mr-3">
-              <input type="checkbox" checked id="log_scroll_check" />
-              Scroll To bottom
-            </label>
+        </div>
+        <div class="column is-6">
+          <div class="field">
+            <label class="label is-small">No. of messages</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="1" />
+            </div>
           </div>
         </div>
-        <!-- <p class="content is-small has-text-light" id="logDisplay"></p> -->
-        <textarea
-          id="logDisplay"
-          class="textarea has-background-dark has-text-light is-small"
-          rows="20"
-          readonly
-        ></textarea>
-        <!-- <div>
+      </div>
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-6">
+          <div class="field">
+            <label class="label is-small">Fixed Count</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Settings section end-->
+
+      <!-- Controls section -->
+      <!-- menu Controls title 2-->
+      <div class="columns has-background-light">
+        <div class="column is-2">
+          <span>
+            <img src="../assets/images/options_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Controls</b></h6>
+        </div>
+      </div>
+      <!-- menu Controls content 2-->
+      <div class="columns has-background-light mb-0">
+        <div class="column is-4">
+          <div class="field">
+            <label class="label is-small">Success</label>
+            <label class="label has-text-success is-small">0</label>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="field">
+            <label class="label is-small">Failed</label>
+            <label class="label has-text-danger is-small">0</label>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="field">
+            <label class="label is-small">Total</label>
+            <label class="label has-text-dark is-small">0</label>
+          </div>
+        </div>
+      </div>
+      <div class="columns has-background-light mb-0">
+        <div class="column is-6">
+          <button class="button is-small is-success is-fullwidth" id="cntl_start_btn">Start</button>
+        </div>
+        <div class="column is-6">
+          <button class="button is-small is-black is-fullwidth" id="cntl_stop_btn">Stop</button>
+        </div>
+      </div>
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-6">
+          <button id="cntl_sendone_btn" class="button is-small is-fullwidth">Send one</button>
+        </div>
+        <div class="column is-6">
+          <button id="cntl_view_btn" class="button is-small is-fullwidth">View</button>
+        </div>
+      </div>
+      <!-- Control section end-->
+
+      <!-- Simulation section -->
+      <!-- menu Simulation title 1-->
+      <div class="columns has-background-light">
+        <div class="column is-2 pr-0 pb-0">
+          <span>
+            <img src="../assets/images/simulation_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Simulation</b></h6>
+        </div>
+      </div>
+      <!-- menu Simulation content 1-->
+      <div class="columns has-background-light mb-0">
+        <div class="column is-12">
+          <div class="field">
+            <label class="label is-small">Name</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="Name for simulation" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-6">
+          <button class="button is-small is-fullwidth">Save</button>
+        </div>
+        <div class="column is-6">
+          <button class="button is-small is-fullwidth">Load</button>
+        </div>
+      </div>
+      <!-- Simulation section end -->
+    </div>
+    <!-- center pane -->
+    <div class="column is-7 pt-0">
+      <div class="tabs is-small is-boxed">
+        <ul>
+          <li class="is-active">
+            <a>Message Body Template</a>
+          </li>
+          <li><a>Message Header Template</a></li>
+        </ul>
+      </div>
+      <div class="mb-2">
+        <textarea id="msg_body_txt" class="textarea is-small"
+          placeholder="json template for your message nad wrap variables in {{}}" rows="20"></textarea>
+      </div>
+      <div id="logHeadingWrap" class="columns mb-0">
+        <div class="column is-6">
+          <p class="label is-small mt-2 mb-1">Logs</p>
+        </div>
+        <div class="column is-6">
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" checked id="log_msg_check" />
+            Messages
+          </label>
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" id="log_detail_check" />
+            Detailed Logs
+          </label>
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" checked id="log_scroll_check" />
+            Scroll To bottom
+          </label>
+        </div>
+      </div>
+      <!-- <p class="content is-small has-text-light" id="logDisplay"></p> -->
+      <textarea id="logDisplay" class="textarea has-background-dark has-text-light is-small" rows="20"
+        readonly></textarea>
+      <!-- <div>
           <canvas id="sendMetricsChart" class="w-100"></canvas>
         </div> -->
-      </div>
-      <!-- right pane -->
-      <div class="column is-3 has-background-light">
-        <!-- Connection section -->
-        <!-- menu Connection title 1-->
-        <div class="columns has-background-light">
-          <div class="column is-2 pr-0 pb-0">
-            <span>
-              <img src="../assets/images/connection_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-10 pl-0 pt-2">
-            <h6><b>Connection</b></h6>
-          </div>
-        </div>
-        <!-- menu Connection content 1-->
-        <div class="columns has-background-light mb-0">
-          <div class="column is-12">
-            <div class="field">
-              <label class="label is-small">Connection String</label>
-              <div class="control">
-                <input
-                  class="input is-small"
-                  type="text"
-                  placeholder="Connection String"
-                  id="con_string_txt1"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="columns has-background-light bb-1-light">
-          <div class="column is-12">
-            <div class="field">
-              <label class="label is-small">Storage Connection String</label>
-              <div class="control">
-                <input
-                  class="input is-small"
-                  type="text"
-                  placeholder="Storage Connection String"
-                  id="con_string__txt2"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Simulation section end -->
-
-        <!-- menu section title -->
-        <div class="columns has-background-light">
-          <div class="column is-2">
-            <span>
-              <img src="../assets/images/param_icon.png" width="20px" />
-            </span>
-          </div>
-          <div class="column is-7 pl-0 pt-2">
-            <h6><b>Placeholders</b></h6>
-          </div>
-          <div class="column is-3">
-            <button id="placehold_gen_btn" class="button is-small is-fullwidth">
-              Generate
-            </button>
-          </div>
-        </div>
-        <div class="placeholderWrap" id="placeholderWrap"></div>
-      </div>
     </div>
-  </body>
-  <script defer src="../node_modules/jquery/dist/jquery.min.js"></script>
-  <script defer src="index_renderer.js"></script>
+    <!-- right pane -->
+    <div class="column is-3 has-background-light">
+      <!-- Connection section -->
+      <!-- menu Connection title 1-->
+      <div class="columns has-background-light">
+        <div class="column is-2 pr-0 pb-0">
+          <span>
+            <img src="../assets/images/connection_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-10 pl-0 pt-2">
+          <h6><b>Connection</b></h6>
+        </div>
+      </div>
+      <!-- menu Connection content 1-->
+      <div class="columns has-background-light mb-0">
+        <div class="column is-12">
+          <div class="field">
+            <label class="label is-small">Connection String</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="Connection String" id="con_string_txt1" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns has-background-light bb-1-light">
+        <div class="column is-12">
+          <div class="field">
+            <label class="label is-small">Storage Connection String</label>
+            <div class="control">
+              <input class="input is-small" type="text" placeholder="Storage Connection String" id="con_string__txt2" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Simulation section end -->
+
+      <!-- menu section title -->
+      <div class="columns has-background-light">
+        <div class="column is-2">
+          <span>
+            <img src="../assets/images/param_icon.png" width="20px" />
+          </span>
+        </div>
+        <div class="column is-7 pl-0 pt-2">
+          <h6><b>Placeholders</b></h6>
+        </div>
+        <div class="column is-3">
+          <button id="placehold_gen_btn" class="button is-small is-fullwidth">
+            Generate
+          </button>
+        </div>
+      </div>
+      <div class="placeholderWrap" id="placeholderWrap"></div>
+    </div>
+  </div>
+</body>
+<script defer src="../node_modules/jquery/dist/jquery.min.js"></script>
+<script defer src="index_renderer.js"></script>
+
 </html>
