@@ -25,8 +25,14 @@ contextBridge.exposeInMainWorld("api", {
   //start iot hub simulation
   startIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("StartSimulation:IoTHub", SettingsJson),
 
+  //stop iot hub simulation
+  stopIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("StopSimulation:IoTHub", SettingsJson),
+
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
+
+  //update count
+  onCountUpdate: (countObj) => ipcRenderer.on('LogUpdate', countObj),
 
   //get generated message
   getGeneratedMessage: (SettingsJson) => ipcRenderer.invoke("GenerateMessage", SettingsJson),

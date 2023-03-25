@@ -7,6 +7,9 @@ var SettingsJson = {
   placeholders: [],
   connection: {},
   protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
+  delay : "5",
+  batch : 1,
+  count : 0
 };
 
 //when the document is ready
@@ -38,6 +41,14 @@ window.api.onLogUpdate((_event, message, type) => {
 });
 
 
+//on count update trigger
+window.api.onCountUpdate((_event, countObj) => {
+  $("#count_success_lbl").text(countObj.success);
+  $("#count_fail_lbl").text(countObj.failure);
+  $("#count_total_lbl").text(countObj.total);
+});
+
+
 //-----------------------------------------------------
 //-----------------VIEW BUTTON------------------------
 //-----------------------------------------------------
@@ -62,6 +73,12 @@ function prepareSettings() {
 
   //updating template settings
   SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
+  //updating delay settings
+  SettingsJson.delay = $("#set_delay_txt").val();
+  //updating batch size settings
+  SettingsJson.batch = $("#set_batch_txt").val();
+  //updating fixed count settings
+  SettingsJson.count = $("#set_count_txt").val();
   //update placeholder generation parameters to settings
   updatePhGenParametersToSettings(SettingsJson.placeholders);
 
@@ -133,24 +150,12 @@ function updatePlaceholderGenParams(phName, type) {
 
   phGenOptions[phGenObjIndex].param1 == null &&
     phGenOptions[phGenObjIndex].param2 == null
-    ? $("#ph_" + phName + "_txt1")
-      .parent()
-      .parent()
-      .hide()
-    : $("#ph_" + phName + "_txt1")
-      .parent()
-      .parent()
-      .show();
+    ? $("#ph_" + phName + "_txt1").parent().parent().hide()
+    : $("#ph_" + phName + "_txt1").parent().parent().show();
 
   phGenOptions[phGenObjIndex].param3 == null
-    ? $("#ph_" + phName + "_txt3")
-      .parent()
-      .parent()
-      .hide()
-    : $("#ph_" + phName + "_txt3")
-      .parent()
-      .parent()
-      .show();
+    ? $("#ph_" + phName + "_txt3").parent().parent().hide()
+    : $("#ph_" + phName + "_txt3").parent().parent().show();
 }
 
 //-----------------------------------------------------
@@ -280,8 +285,6 @@ const phCardTemplate = `
             <option value="timeInLocal">Time-InLocal</option>
             <option value="timeInEpoch">Time-InEpoch</option>
             <option value="timeInEpochMilli">Time-InEpochMilli</option>
-            <!-- Advanced -->
-            <option value="advanced">Advanced</option>
           </select>
         </div>
       </div>

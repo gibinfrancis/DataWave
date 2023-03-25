@@ -32,12 +32,12 @@
       <!-- menu section content 1-->
       <div class="columns has-background-light bb-1-light">
         <div class="column is-6">
-          <button id="dir_send_btn" class="dir_btn button is-small is-link is-fullwidth">
+          <button id="dir_send_btn" class="dir_btn button is-small is-link is-outlined is-hovered is-fullwidth">
             Send
           </button>
         </div>
         <div class="column is-6">
-          <button id="dir_receive_btn" class="dir_btn button is-small is-fullwidth">
+          <button id="dir_receive_btn" class="dir_btn button is-small is-link is-outlined is-fullwidth">
             Receive
           </button>
         </div>
@@ -60,24 +60,24 @@
       <!-- menu section content 2-->
       <div class="columns has-background-light mb-0">
         <div class="column is-6">
-          <button id="serv_iothub_btn" class="serv_btn button is-small is-link is-fullwidth">
+          <button id="serv_iothub_btn" class="serv_btn button is-small is-link is-outlined is-hovered is-fullwidth">
             Iot Hub
           </button>
         </div>
         <div class="column is-6">
-          <button id="serv_eventhub_btn" class="serv_btn button is-small is-fullwidth">
+          <button id="serv_eventhub_btn" class="serv_btn button is-small is-link is-outlined is-fullwidth">
             Event Hub
           </button>
         </div>
       </div>
       <div class="columns has-background-light bb-1-light">
         <div class="column is-6">
-          <button id="serv_servicebus_btn" class="serv_btn button is-small is-fullwidth">
+          <button id="serv_servicebus_btn" class="serv_btn button is-small is-link is-outlined is-fullwidth">
             Service Bus
           </button>
         </div>
         <div class="column is-6">
-          <button id="serv_mqtt_btn" class="serv_btn button is-small is-fullwidth">
+          <button id="serv_mqtt_btn" class="serv_btn button is-small is-link is-outlined is-fullwidth">
             MQTT
           </button>
         </div>
@@ -100,17 +100,17 @@
       <div class="columns has-background-light mb-0">
         <div class="column is-6">
           <div class="field">
-            <label class="label is-small">Time in sec</label>
+            <label class="label is-small">Delay Seconds</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="5" />
+              <input class="input is-small" type="text" id="set_delay_txt"  placeholder="Seconds" value="5" />
             </div>
           </div>
         </div>
         <div class="column is-6">
           <div class="field">
-            <label class="label is-small">No. of messages</label>
+            <label class="label is-small">Batch size</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="1" />
+              <input class="input is-small" type="text" id="set_batch_txt" placeholder="Batch size" value="1" />
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@
           <div class="field">
             <label class="label is-small">Fixed Count</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="0" />
+              <input class="input is-small" type="text" placeholder="0" id="set_count_txt" value="0" />
             </div>
           </div>
         </div>
@@ -144,36 +144,36 @@
         <div class="column is-4">
           <div class="field">
             <label class="label is-small">Success</label>
-            <label class="label has-text-success is-small">0</label>
+            <label class="label has-text-success is-small" id="count_success_lbl"  >0</label>
           </div>
         </div>
         <div class="column is-4">
           <div class="field">
             <label class="label is-small">Failed</label>
-            <label class="label has-text-danger is-small">0</label>
+            <label class="label has-text-danger is-small" id="count_fail_lbl">0</label>
           </div>
         </div>
         <div class="column is-4">
           <div class="field">
             <label class="label is-small">Total</label>
-            <label class="label has-text-dark is-small">0</label>
+            <label class="label has-text-dark is-small" id="count_total_lbl">0</label>
           </div>
         </div>
       </div>
       <div class="columns has-background-light mb-0">
         <div class="column is-6">
-          <button class="button is-small is-success is-fullwidth" id="cntl_start_btn">Start</button>
+          <button class="button is-small is-success is-outlined is-fullwidth" id="cntl_start_btn">Start</button>
         </div>
         <div class="column is-6">
-          <button class="button is-small is-black is-fullwidth" id="cntl_stop_btn">Stop</button>
+          <button class="button is-small is-danger is-outlined is-fullwidth" id="cntl_stop_btn">Stop</button>
         </div>
       </div>
       <div class="columns has-background-light bb-1-light">
         <div class="column is-6">
-          <button id="cntl_sendone_btn" class="button is-small is-fullwidth">Send one</button>
+          <button id="cntl_sendone_btn" class="button is-small is-link is-outlined is-fullwidth">Send one</button>
         </div>
         <div class="column is-6">
-          <button id="cntl_view_btn" class="button is-small is-fullwidth">View</button>
+          <button id="cntl_view_btn" class="button is-small is-link is-outlined is-fullwidth">View sample</button>
         </div>
       </div>
       <!-- Control section end-->
@@ -203,10 +203,10 @@
       </div>
       <div class="columns has-background-light bb-1-light">
         <div class="column is-6">
-          <button class="button is-small is-fullwidth">Save</button>
+          <button class="button is-small is-link is-outlined is-fullwidth">Save</button>
         </div>
         <div class="column is-6">
-          <button class="button is-small is-fullwidth">Load</button>
+          <button class="button is-small is-link is-outlined is-fullwidth">Load</button>
         </div>
       </div>
       <!-- Simulation section end -->
@@ -299,7 +299,7 @@
           <h6><b>Placeholders</b></h6>
         </div>
         <div class="column is-3">
-          <button id="placehold_gen_btn" class="button is-small is-fullwidth">
+          <button id="placehold_gen_btn" class="button is-small is-link is-outlined is-fullwidth">
             Generate
           </button>
         </div>

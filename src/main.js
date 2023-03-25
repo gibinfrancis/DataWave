@@ -44,6 +44,9 @@ app.whenReady().then(() => {
   //iot hub simulation start handle
   ipcMain.handle('StartSimulation:IoTHub', async (event, SettingsJson) => startIoTHubSimulation(SettingsJson, mainWindow));
 
+  //iot hub simulation start handle
+  ipcMain.handle('StopSimulation:IoTHub', async (event, SettingsJson) => stopIoTHubSimulation(SettingsJson, mainWindow));
+
   //generate a message
   ipcMain.handle('GenerateMessage', async (event, SettingsJson) => getPreparedMessage(SettingsJson));
 
