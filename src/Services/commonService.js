@@ -2,9 +2,9 @@ const { v4: guidV4 } = require("uuid");
 var moment = require("moment");
 
 //get a message prepared using its placeholder and template
-function getPreparedMessage(settingsJson) {
+function getPreparedMessage(settingsJson, iteration) {
   // Create a message and send it to the IoT Hub every two seconds
-  const genPlaceholders = generateTextForPlaceholders(settingsJson.placeholders, 1);
+  const genPlaceholders = generateTextForPlaceholders(settingsJson.placeholders, iteration);
 
   //replace the template with generated placeholder data
   const data = replaceTemplateWithPlaceholder(settingsJson.messageBodyTemplate, genPlaceholders);

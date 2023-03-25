@@ -7,7 +7,7 @@ var SettingsJson = {
   placeholders: [],
   connection: {},
   protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
-  delay : "5",
+  delay : 60,
   batch : 1,
   count : 0
 };
@@ -27,7 +27,7 @@ $(function () {
   $("#cntl_start_btn").on("click", startButtonClickHandler);
 
   //stop button click event
-  $("#cntl_stop_btn").on("click", () => stopButtonClickHandler);
+  $("#cntl_stop_btn").on("click", stopButtonClickHandler);
 
   //view generated message button
   $("#cntl_view_btn").on("click", viewButtonClickHandler);
@@ -74,11 +74,11 @@ function prepareSettings() {
   //updating template settings
   SettingsJson.messageBodyTemplate = $("#msg_body_txt").val();
   //updating delay settings
-  SettingsJson.delay = $("#set_delay_txt").val();
+  //SettingsJson.delay = $("#set_delay_txt").val();
   //updating batch size settings
-  SettingsJson.batch = $("#set_batch_txt").val();
+  //SettingsJson.batch = $("#set_batch_txt").val();
   //updating fixed count settings
-  SettingsJson.count = $("#set_count_txt").val();
+  //SettingsJson.count = $("#set_count_txt").val();
   //update placeholder generation parameters to settings
   updatePhGenParametersToSettings(SettingsJson.placeholders);
 
@@ -139,8 +139,6 @@ function genOptionDropdownClickHandler() {
   SettingsJson.placeholders[objIndex].type = type;
   //update params within placeholder
   updatePlaceholderGenParams(phName, type);
-
-  console.log(SettingsJson.placeholders);
 }
 
 //update placeholder generation items parameters
@@ -197,7 +195,7 @@ async function startButtonClickHandler() {
   prepareSettings();
 
   //invoke main service to start simulation
-  //await window.api.startIoTHubSimulation(SettingsJson);
+  await window.api.startIoTHubSimulation(SettingsJson);
 }
 
 function updatePhGenParametersToSettings(placeholders) {
@@ -214,7 +212,10 @@ function updatePhGenParametersToSettings(placeholders) {
 //-----------------------------------------------------
 //-----------------STOP BUTTON-------------------------
 //-----------------------------------------------------
-function stopButtonClickHandler() { }
+async function stopButtonClickHandler() {
+  //invoking stop simulation
+  await window.api.stopIoTHubSimulation(SettingsJson);
+ }
 
 function printLogMessage(logMessage, type) {
   //check the message view enabled

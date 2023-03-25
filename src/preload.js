@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld("api", {
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
 
   //update count
-  onCountUpdate: (countObj) => ipcRenderer.on('LogUpdate', countObj),
+  onCountUpdate: (countObj) => ipcRenderer.on('CountUpdate', countObj),
 
   //get generated message
   getGeneratedMessage: (SettingsJson) => ipcRenderer.invoke("GenerateMessage", SettingsJson),

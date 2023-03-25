@@ -1,6 +1,6 @@
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const { getPreparedMessage } = require('./commonService.js');
+const getPreparedMessage = require('./CommonService.js');
 var _client;
 var _settingsJson;
 var _mainWindow;
@@ -28,6 +28,11 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
     //resetting counters
     resetCounters();
 
+    //clearing timers
+    clearTimer();
+
+    console.log(_settingsJson.delay);
+
     //timer trigger
     _sendInterval = setInterval(async () => {
     
@@ -51,11 +56,11 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
         }
 
         //check if total count reached, if its a fixed count simulation
-        if(SettingsJson.count > 0 && _totalCounter >= SettingsJson.count 
+        if(_settingsJson.count > 0 && _totalCounter >= _settingsJson.count 
                 || !_sendInterval)
             clearTimer();
 
-    }, _settingsJson.delay);
+    }, (_settingsJson.delay * 1000));
 
     //close client connection
     await closeToIoTHubClient();
@@ -66,6 +71,7 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
 //stop iot hub simulation
 async function stopIoTHubSimulation(SettingsJson, MainWindow) {
 
+    _mainWindow = _mainWindow ?? MainWindow;
     clearTimer();
     printLogMessage("Simulation stop requested", "message");
 }
@@ -187,4 +193,5 @@ function printLogMessage(message, type) {
     console.log(message);
 }
 
-module.exports = startIoTHubSimulation;
+exports.startIoTHubSimulation = startIoTHubSimulation;
+exports.stopIoTHubSimulation = stopIoTHubSimulation;
