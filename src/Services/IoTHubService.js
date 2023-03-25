@@ -4,11 +4,10 @@ const getPreparedMessage = require('./CommonService.js');
 var _client;
 var _settingsJson;
 var _mainWindow;
-let _sendInterval;
 let _totalCounter;
 let _totalSuccessCounter;
 let _totalFailureCounter;
-let _statusLog = []
+//let _statusLog = []
 let _cancellationRequest = false;
 
 //start simulation based on the settings provided
@@ -28,15 +27,10 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
     //resetting counters
     resetCounters();
 
-    //clearing timers
-    clearTimer();
-
-    console.log(_settingsJson.delay);
-
     //timer trigger
-    _sendInterval = setInterval(async () => {
-    
-        for(let i = 0 ; i <  _settingsJson.batch ; i++ ) {
+    while (true) {
+
+        for (let i = 0; i < _settingsJson.batch; i++) {
 
             // Create a message and send it to the IoT Hub every two seconds
             const data = getPreparedMessage(_settingsJson, _totalCounter);
@@ -49,23 +43,32 @@ async function startIoTHubSimulation(SettingsJson, MainWindow) {
 
             //send event 
             printLogMessage(message.getData(), "message");
-            await sendMessage(_client, message.getData());      
-            
-            if(_cancellationRequest == true)
+            await sendMessage(_client, message.getData());
+            console.log(_totalCounter);
+            if (_cancellationRequest == true)
                 break;
         }
 
         //check if total count reached, if its a fixed count simulation
-        if(_settingsJson.count > 0 && _totalCounter >= _settingsJson.count 
-                || !_sendInterval)
+        if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+            || _cancellationRequest == true) {
             clearTimer();
+            break;
+        }
 
-    }, (_settingsJson.delay * 1000));
+        //delay     
+        await delay(_settingsJson.delay * 1000);
+    }
 
     //close client connection
     await closeToIoTHubClient();
     printLogMessage("Simulation completed", "message");
 
+}
+
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 //stop iot hub simulation
@@ -77,10 +80,7 @@ async function stopIoTHubSimulation(SettingsJson, MainWindow) {
 }
 
 //clear timer
-function clearTimer()
-{
-    clearInterval(_sendInterval);
-    _sendInterval = null;
+function clearTimer() {
     _cancellationRequest = true;
 }
 
@@ -93,14 +93,14 @@ function connectToIoTHub(deviceConString, protocol) {
         client.open(err => {
             if (err) {
                 printLogMessage("Client connection failed", "info");
-                printLogMessage(err, "details")
+                printLogMessage(err, "details");
                 reject(err);
 
             }
             else {
                 printLogMessage("Client connected", "info");
                 resolve(client);
-                
+
             }
 
         });
@@ -117,11 +117,13 @@ function sendMessage(client, content) {
             if (err) {
                 printLogMessage("Error while sending message", "info");
                 printLogMessage(err, "details")
+                updateCounters(false);
                 reject(err);
             }
             else {
                 printLogMessage("Telemetry message sent", "info");
                 printLogMessage("Message Status" + res, "details");
+                updateCounters(true);
                 resolve(res);
             }
         });
@@ -129,30 +131,28 @@ function sendMessage(client, content) {
 }
 
 //reset counters
-function resetCounters()
-{
-    _totalCounter= 0;
+function resetCounters() {
+    _totalCounter = 0;
     _totalSuccessCounter = 0;
     _totalFailureCounter = 0;
     _cancellationRequest = false;
 }
 
 //update counters
-function updateCounters(success)
-{
+function updateCounters(success) {
     _totalCounter++;
-    _statusLog.push({ time : moment(), status : success });
+    //_statusLog.push({ time: moment(), status: success });
 
-    if(success)
+    if (success)
         _totalSuccessCounter++;
     else
         _totalFailureCounter++;
 
-    let counterObj = { 
-                        success : _totalSuccessCounter, 
-                        failure :  _totalFailureCounter, 
-                        total : _totalCounter 
-                    };
+    let counterObj = {
+        success: _totalSuccessCounter,
+        failure: _totalFailureCounter,
+        total: _totalCounter
+    };
     _mainWindow.webContents.send("CountUpdate", counterObj);
 
 }

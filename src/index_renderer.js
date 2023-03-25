@@ -7,9 +7,9 @@ var SettingsJson = {
   placeholders: [],
   connection: {},
   protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
-  delay : 60,
-  batch : 1,
-  count : 0
+  delay: 30,
+  batch: 1,
+  count: 0
 };
 
 //when the document is ready
@@ -215,7 +215,7 @@ function updatePhGenParametersToSettings(placeholders) {
 async function stopButtonClickHandler() {
   //invoking stop simulation
   await window.api.stopIoTHubSimulation(SettingsJson);
- }
+}
 
 function printLogMessage(logMessage, type) {
   //check the message view enabled
