@@ -102,7 +102,7 @@
           <div class="field">
             <label class="label is-small">Delay Seconds</label>
             <div class="control">
-              <input class="input is-small" type="text" id="set_delay_txt"  placeholder="Seconds" value="5" />
+              <input class="input is-small" type="text" id="set_delay_txt" placeholder="Seconds" value="10" />
             </div>
           </div>
         </div>
@@ -124,12 +124,18 @@
             </div>
           </div>
         </div>
+        <div class="column is-6 pt-">
+          <label class="checkbox mr-3 pt-30px">
+            <input type="checkbox" id="set_bulk_check" />
+            Bulk Send
+          </label>
+        </div>
       </div>
       <!-- Settings section end-->
 
       <!-- Controls section -->
       <!-- menu Controls title 2-->
-      <div class="columns has-background-light">
+      <div class="columns has-background-light mb-0">
         <div class="column is-2">
           <span>
             <img src="../assets/images/options_icon.png" width="20px" />
@@ -139,12 +145,13 @@
           <h6><b>Controls</b></h6>
         </div>
       </div>
+      <progress class="progress is-small is-primary mb-1" id="cntl_progress" value="0" max="100">15%</progress>
       <!-- menu Controls content 2-->
       <div class="columns has-background-light mb-0">
         <div class="column is-4">
           <div class="field">
             <label class="label is-small">Success</label>
-            <label class="label has-text-success is-small" id="count_success_lbl"  >0</label>
+            <label class="label has-text-success is-small" id="count_success_lbl">0</label>
           </div>
         </div>
         <div class="column is-4">
@@ -196,17 +203,17 @@
           <div class="field">
             <label class="label is-small">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Name for simulation" />
+              <input class="input is-small" type="text" id="sim_name_txt" placeholder="Name for simulation" />
             </div>
           </div>
         </div>
       </div>
       <div class="columns has-background-light bb-1-light">
         <div class="column is-6">
-          <button class="button is-small is-link is-outlined is-fullwidth">Save</button>
+          <button class="button is-small is-link is-outlined is-fullwidth" id="sim_save_btn">Save</button>
         </div>
         <div class="column is-6">
-          <button class="button is-small is-link is-outlined is-fullwidth">Load</button>
+          <button class="button is-small is-link is-outlined is-fullwidth" id="sim_load_btn">Load</button>
         </div>
       </div>
       <!-- Simulation section end -->
@@ -216,20 +223,29 @@
       <div class="tabs is-small is-boxed">
         <ul>
           <li class="is-active">
-            <a>Message Body Template</a>
+            <a class="tab-head" id="msg_body_tab">Message Body Template</a>
           </li>
-          <li><a>Message Header Template</a></li>
+          <li>
+            <a class="tab-head" id="msg_header_tab">Message Header Template</a>
+          </li>
         </ul>
       </div>
-      <div class="mb-2">
+      <div class="tab-content" id="msg_body_tab_content" class="mb-2">
         <textarea id="msg_body_txt" class="textarea is-small"
-          placeholder="json template for your message nad wrap variables in {{}}" rows="20"></textarea>
+          placeholder="json template for your message and wrap variables in {{}}" rows="20"></textarea>
+      </div>
+      <div class="tab-content hidden" id="msg_header_tab_content" class="mb-2">
+        <textarea id="msg_header_txt" class="textarea is-small"
+          placeholder="json template for your header json nad wrap variables in {{}}" rows="20"></textarea>
       </div>
       <div id="logHeadingWrap" class="columns mb-0">
-        <div class="column is-6">
+        <div class="column is-1">
           <p class="label is-small mt-2 mb-1">Logs</p>
         </div>
         <div class="column is-6">
+          <p class="label is-small mt-2 mb-1" id="log_msg_lbl"></p>
+        </div>
+        <div class="column is-5 pt-5">
           <label class="checkbox is-pulled-right mr-3">
             <input type="checkbox" checked id="log_msg_check" />
             Messages
@@ -266,10 +282,10 @@
         </div>
       </div>
       <!-- menu Connection content 1-->
-      <div class="columns has-background-light mb-0">
+      <div class="columns has-background-light">
         <div class="column is-12">
           <div class="field">
-            <label class="label is-small">Connection String</label>
+            <label class="label is-small" id="con_string_lbl1">Connection String</label>
             <div class="control">
               <input class="input is-small" type="text" placeholder="Connection String" id="con_string_txt1" />
             </div>
@@ -277,9 +293,9 @@
         </div>
       </div>
       <div class="columns has-background-light bb-1-light">
-        <div class="column is-12">
+        <div class="column is-12 pt-0 hidden">
           <div class="field">
-            <label class="label is-small">Storage Connection String</label>
+            <label class="label is-small" id="con_string_lbl2">Storage Connection String</label>
             <div class="control">
               <input class="input is-small" type="text" placeholder="Storage Connection String" id="con_string__txt2" />
             </div>

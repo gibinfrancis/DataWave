@@ -17,16 +17,17 @@ window.addEventListener("DOMContentLoaded", () => {
   //   console.log(data);
   //   // send data back to the main process
   // });
+
 });
 
 //exposing api to renderer pages
 contextBridge.exposeInMainWorld("api", {
 
   //start iot hub simulation
-  startIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("StartSimulation:IoTHub", SettingsJson),
+  startIoTHubSimulation: (settingsJson) => ipcRenderer.invoke("StartSimulation:IoTHub", settingsJson),
 
   //stop iot hub simulation
-  stopIoTHubSimulation: (SettingsJson) => ipcRenderer.invoke("StopSimulation:IoTHub", SettingsJson),
+  stopIoTHubSimulation: (settingsJson) => ipcRenderer.invoke("StopSimulation:IoTHub", settingsJson),
 
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
@@ -35,7 +36,7 @@ contextBridge.exposeInMainWorld("api", {
   onCountUpdate: (countObj) => ipcRenderer.on('CountUpdate', countObj),
 
   //get generated message
-  getGeneratedMessage: (SettingsJson) => ipcRenderer.invoke("GenerateMessage", SettingsJson),
+  getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
 
 
 });

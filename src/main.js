@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
-const IoTHubService = require('./Services/IoTHubService.js');
-const getPreparedMessage = require('./Services/CommonService.js');
+const ioTHubService = require('./Services/IoTHubService.js');
+const commonService = require('./Services/CommonService.js');
 const path = require("path");
-var mainWindow
+var mainWindow;
 
 // Create the browser window.
 const createWindow = () => {
@@ -42,13 +42,13 @@ const createWindow = () => {
 app.whenReady().then(() => {
 
   //iot hub simulation start handle
-  ipcMain.handle('StartSimulation:IoTHub', async (event, SettingsJson) => IoTHubService.startIoTHubSimulation(SettingsJson, mainWindow));
+  ipcMain.handle('StartSimulation:IoTHub', async (event, settingsJson) => ioTHubService.startIoTHubSimulation(settingsJson, mainWindow));
 
   //iot hub simulation start handle
-  ipcMain.handle('StopSimulation:IoTHub', async (event, SettingsJson) => IoTHubService.stopIoTHubSimulation(SettingsJson, mainWindow));
+  ipcMain.handle('StopSimulation:IoTHub', async (event, settingsJson) => ioTHubService.stopIoTHubSimulation(settingsJson, mainWindow));
 
   //generate a message
-  ipcMain.handle('GenerateMessage', async (event, SettingsJson) => getPreparedMessage(SettingsJson, 0));
+  ipcMain.handle('GenerateMessage', async (event, settingsJson) => commonService.getPreparedMessageAndHeader(settingsJson, 0));
 
   createWindow();
 

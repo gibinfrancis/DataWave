@@ -10,3 +10,9 @@
     "SourceTimestamp": "{{SourceTimestamp}}"
   }
 }
+
+
+{
+  "HeaderProperty": "{{DisplayName}}",
+  "HeaderProperty2": "hardOne"
+}

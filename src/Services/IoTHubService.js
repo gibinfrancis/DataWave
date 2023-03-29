@@ -1,88 +1,105 @@
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const getPreparedMessage = require('./CommonService.js');
+const commonService = require('./CommonService.js');
 var _client;
 var _settingsJson;
 var _mainWindow;
 let _totalCounter;
+let _msgGenCounter;
 let _totalSuccessCounter;
 let _totalFailureCounter;
-//let _statusLog = []
 let _cancellationRequest = false;
 
 //start simulation based on the settings provided
-async function startIoTHubSimulation(SettingsJson, MainWindow) {
+async function startIoTHubSimulation(settingsJson, mainWindow) {
 
-    _settingsJson = SettingsJson;
-    _mainWindow = MainWindow;
+    _settingsJson = settingsJson;
+    _mainWindow = mainWindow;
 
     //get respective protocol
-    printLogMessage("Starting simulation", "details");
+    printLogMessage("🚀 Starting simulation", "info");
     const Protocol = getProtocol(_settingsJson.protocol);
 
     //create iot hub device client
     printLogMessage("Trying to create client", "details");
     _client = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
 
-    //resetting counters
-    resetCounters();
+    //resetting counters and cancellation
+    resetCountersAndCancellation();
 
     //timer trigger
     while (true) {
 
-        for (let i = 0; i < _settingsJson.batch; i++) {
+        //messages array will be used on batched sent
+        let messages = [];
+
+        for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
 
             // Create a message and send it to the IoT Hub every two seconds
-            const data = getPreparedMessage(_settingsJson, _totalCounter);
+            const data = commonService.getPreparedMessageAndHeader(_settingsJson, _msgGenCounter);
 
             //prepare message
-            const message = new Message(data)
+            const message = new Message(data);
 
             //set properties
-            //message.properties.add("temperatureAlert", temperature > 28 ? "true" : "false");
+            //message properties.add("temperatureAlert", temperature > 28 ? "true" : "false");
 
-            //send event 
-            printLogMessage(message.getData(), "message");
-            await sendMessage(_client, message.getData());
-            console.log(_totalCounter);
-            if (_cancellationRequest == true)
+            //log event 
+            printLogMessage("📝 Message prepared", "info");
+            //printLogMessage(message.properties.propertyList. getData(), "message");
+
+            if (_settingsJson.bulkSend == true)
+                //adding messages to array
+                messages.push(message);
+            else {
+                //send event 
+                await sendMessage(_client, message);
+            }
+
+            //check if total count reached, if its a fixed count simulation
+            if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+                || _cancellationRequest == true) {
                 break;
+            }
         }
 
+
+        //send message batch if messages are available
+        if (_settingsJson.bulkSend == true && messages.length > 0) {
+            //send message as batch
+            await sendBatchMessages(_client, messages);
+        }
         //check if total count reached, if its a fixed count simulation
         if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
             || _cancellationRequest == true) {
-            clearTimer();
             break;
         }
 
-        //delay     
-        await delay(_settingsJson.delay * 1000);
+        //delay for sometime
+        printLogMessage("🕒 Waiting for delay", "info");
+        await commonService.delay(_settingsJson.delay * 1000);
+        printLogMessage("Delay completed", "details");
+
+        //check if cancellation requested during the delay time
+        if (_cancellationRequest == true) {
+            break;
+        }
     }
 
     //close client connection
     await closeToIoTHubClient();
-    printLogMessage("Simulation completed", "message");
+    printLogMessage("✅ Simulation completed", "info");
 
-}
-
-
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 //stop iot hub simulation
-async function stopIoTHubSimulation(SettingsJson, MainWindow) {
+async function stopIoTHubSimulation(settingsJson, mainWindow) {
 
-    _mainWindow = _mainWindow ?? MainWindow;
-    clearTimer();
-    printLogMessage("Simulation stop requested", "message");
-}
-
-//clear timer
-function clearTimer() {
+    _mainWindow = _mainWindow ?? mainWindow;
     _cancellationRequest = true;
+    printLogMessage("🚫 Simulation stop requested", "info");
 }
+
 
 //Connect to IoT Hub using the device connection string and protocol
 function connectToIoTHub(deviceConString, protocol) {
@@ -92,15 +109,13 @@ function connectToIoTHub(deviceConString, protocol) {
         //opens connection
         client.open(err => {
             if (err) {
-                printLogMessage("Client connection failed", "info");
+                printLogMessage("🔴 Client connection failed", "info");
                 printLogMessage(err, "details");
                 reject(err);
-
             }
             else {
-                printLogMessage("Client connected", "info");
+                printLogMessage("🟢 Client connected", "info");
                 resolve(client);
-
             }
 
         });
@@ -108,21 +123,21 @@ function connectToIoTHub(deviceConString, protocol) {
 }
 
 //send message to IoT Hub
-function sendMessage(client, content) {
+function sendMessage(client, message) {
     return new Promise((resolve, reject) => {
         //prepare message
-        let message = new Message(content);
+        //let message = new Message(content);
         //send the message     
         client.sendEvent(message, (err, res) => {
             if (err) {
-                printLogMessage("Error while sending message", "info");
-                printLogMessage(err, "details")
+                printLogMessage("❌ Error while sending message", "info");
+                printLogMessage("Error : " + err.toString(), "details")
                 updateCounters(false);
                 reject(err);
             }
             else {
-                printLogMessage("Telemetry message sent", "info");
-                printLogMessage("Message Status" + res, "details");
+                printLogMessage("✔️ Telemetry message sent", "info");
+                printLogMessage("Message Status : " + res.constructor.name, "details");
                 updateCounters(true);
                 resolve(res);
             }
@@ -130,23 +145,46 @@ function sendMessage(client, content) {
     });
 }
 
+
+//send batch message to IoT Hub
+function sendBatchMessages(client, messages) {
+    return new Promise((resolve, reject) => {
+        //send the message     
+        client.sendEventBatch(messages, (err, res) => {
+            if (err) {
+                printLogMessage("❌ Error while sending message", "info");
+                printLogMessage("Error : " + err.toString(), "details")
+                updateCounters(false, messages.length);
+                reject(err);
+            }
+            else {
+                printLogMessage("✔️ Telemetry message batch sent", "info");
+                printLogMessage("Batch message Status : " + res.constructor.name, "details");
+                updateCounters(true, messages.length);
+                resolve(res);
+            }
+        });
+    });
+}
+
 //reset counters
-function resetCounters() {
+function resetCountersAndCancellation() {
     _totalCounter = 0;
     _totalSuccessCounter = 0;
     _totalFailureCounter = 0;
+    _msgGenCounter = 0;
     _cancellationRequest = false;
 }
 
 //update counters
-function updateCounters(success) {
-    _totalCounter++;
+function updateCounters(success, count = 1) {
+    _totalCounter = _totalCounter + count;
     //_statusLog.push({ time: moment(), status: success });
 
     if (success)
-        _totalSuccessCounter++;
+        _totalSuccessCounter = _totalSuccessCounter + count;
     else
-        _totalFailureCounter++;
+        _totalFailureCounter = _totalFailureCounter + count;
 
     let counterObj = {
         success: _totalSuccessCounter,
@@ -163,12 +201,12 @@ function closeToIoTHubClient() {
         //close the connection
         _client.close(err => {
             if (err) {
-                printLogMessage("Error while closing connection", "info");
+                printLogMessage("🔴 Error while closing connection", "info");
                 printLogMessage(err, "details")
                 reject(err);
             }
             else {
-                printLogMessage("Connection closed successfully", "info");
+                printLogMessage("🔴 Connection closed successfully", "info");
                 resolve(true);
             }
 
@@ -193,5 +231,6 @@ function printLogMessage(message, type) {
     console.log(message);
 }
 
+//exporting functionalities
 exports.startIoTHubSimulation = startIoTHubSimulation;
 exports.stopIoTHubSimulation = stopIoTHubSimulation;

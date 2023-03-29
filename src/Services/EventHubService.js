@@ -8,6 +8,7 @@ async function main() {
   const producer = new EventHubProducerClient(connectionString, eventHubName);
 
   // Prepare a batch of three events.
+  producer.
   const batch = await producer.createBatch();
   batch.tryAdd({ body: "First event" });
   batch.tryAdd({ body: "Second event" });

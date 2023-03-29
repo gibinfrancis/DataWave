@@ -2,7 +2,7 @@ const { v4: guidV4 } = require("uuid");
 var moment = require("moment");
 
 //get a message prepared using its placeholder and template
-function getPreparedMessage(settingsJson, iteration) {
+function getPreparedMessageAndHeader(settingsJson, iteration) {
   // Create a message and send it to the IoT Hub every two seconds
   const genPlaceholders = generateTextForPlaceholders(settingsJson.placeholders, iteration);
 
@@ -204,4 +204,10 @@ function generateRandomDouble(min, max) {
 }
 
 
-module.exports = getPreparedMessage;
+//delay function to wait for some time
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+exports.getPreparedMessageAndHeader = getPreparedMessageAndHeader;
+exports.delay = delay;
