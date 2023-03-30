@@ -38,15 +38,23 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
             // Create a message and send it to the IoT Hub every two seconds
             const data = commonService.getPreparedMessageAndHeader(_settingsJson, _msgGenCounter);
 
+            //in case of message preparation error
+            if (data.error) {
+                _cancellationRequest = true;
+                printLogMessage("❌ Error while parsing header : " + data.error, "info");
+                break;
+            }
+
             //prepare message
-            const message = new Message(data);
+            const message = new Message(data.message);
 
             //set properties
-            //message properties.add("temperatureAlert", temperature > 28 ? "true" : "false");
+            setHeaderPropertiesToMessage(message, data.header);
 
-            //log event 
+            //log message 
             printLogMessage("📝 Message prepared", "info");
-            //printLogMessage(message.properties.propertyList. getData(), "message");
+            printLogMessage("Message header" + "\r\n" + JSON.stringify(data.header, null, 2), "message");
+            printLogMessage("Message body" + "\r\n" + message.getData(), "message");
 
             if (_settingsJson.bulkSend == true)
                 //adding messages to array
@@ -165,6 +173,22 @@ function sendBatchMessages(client, messages) {
             }
         });
     });
+}
+
+//function to set header properties to the message
+function setHeaderPropertiesToMessage(message, header) {
+
+    //validate
+    if (message == null && header == null)
+        return;
+    //get akk keys in header object
+    var keys = Object.keys(header);
+    //lopping through the keys
+    for (var i = 0; i < keys.length; i++) {
+        //adding message properties 
+        message.properties.add(keys[i], header[keys[i]]);
+    }
+
 }
 
 //reset counters

@@ -67,7 +67,7 @@ async function viewButtonClickHandler() {
   const genMessage = await window.api.getGeneratedMessage(settingsJson);
 
   //print generated message as log
-  printLogMessage(genMessage, "info");
+  printLogMessage(genMessage.message, "info");
 
 }
 
@@ -359,8 +359,10 @@ function prepareSettings() {
     connectionPram2: getValueInType($("#con_string_txt2").val(), "string", null)
   };
 
-  //updating template settings
+  //updating message template 
   settingsJson.messageBodyTemplate = getValueInType($("#msg_body_txt").val(), "string", null);
+  //updating header template
+  settingsJson.messageHeaderTemplate = getValueInType($("#msg_header_txt").val(), "string", null);
   //updating delay settings
   settingsJson.delay = getValueInType($("#set_delay_txt").val(), "int", 10);
   //updating batch size settings

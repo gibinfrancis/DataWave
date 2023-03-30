@@ -13,6 +13,7 @@
 
 
 {
-  "HeaderProperty": "{{DisplayName}}",
-  "HeaderProperty2": "hardOne"
+  "HeaderNodeId": "{{HeaderNodeId}}",
+  "HeaderApplicationUri": "{{ApplicationUri}}",
+  "HeaderDisplayName": "HardValue"
 }
