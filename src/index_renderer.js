@@ -12,6 +12,8 @@ var settingsJson = {
   count: 0,
   bulkSend: false
 };
+//simulation flag
+var simulationInProgress = false;
 
 //when the document is ready
 $(function () {
@@ -65,6 +67,9 @@ async function viewButtonClickHandler() {
 
   //invoke main service to get generated message
   const genMessage = await window.api.getGeneratedMessage(settingsJson);
+
+  //print generated header message as log
+  printLogMessage(JSON.stringify(genMessage.header), "info");
 
   //print generated message as log
   printLogMessage(genMessage.message, "info");
@@ -228,21 +233,36 @@ async function sendOneButtonClickHandler() {
 //-----------------------------------------------------
 async function startButtonClickHandler() {
 
+  // //check already existing simulation
+  // if (simulationInProgress == true)
+  //   return
+
+  //in progress flag
+  simulationInProgress = true;
+
   //prepare settings object
   prepareSettings();
 
   //validate the settings provided
-  let validationRes = validateSettings();
+  let validationRes = true;// validateSettings();
 
   //removing the attribute will show a flowing progress bar on screen
   $("#cntl_progress").removeAttr("value");
 
-  if (validationRes == true)
-    //invoke main service to start simulation
+  if (validationRes == false)
+    return;
+
+  //invoke main service to start simulation
+  if (settingsJson.direction == "send" && settingsJson.service == "iothub")
     await window.api.startIoTHubSimulation(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
+    await window.api.startIoTHubSubscription(settingsJson);
 
   //setting 0 will disable the continuous flow of progress bar
   $("#cntl_progress").attr("value", 0);
+
+  //in progress flag
+  simulationInProgress = false;
 }
 
 
@@ -250,8 +270,13 @@ async function startButtonClickHandler() {
 //-----------------STOP BUTTON-------------------------
 //-----------------------------------------------------
 async function stopButtonClickHandler() {
-  //invoking stop simulation
-  await window.api.stopIoTHubSimulation(settingsJson);
+
+  //invoke main service to start simulation
+  if (settingsJson.direction == "send" && settingsJson.service == "iothub")
+    await window.api.stopIoTHubSimulation(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
+    await window.api.stopIoTHubSubscription(settingsJson);
+
 }
 
 function printLogMessage(logMessage, type) {

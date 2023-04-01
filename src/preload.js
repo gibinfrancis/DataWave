@@ -29,6 +29,12 @@ contextBridge.exposeInMainWorld("api", {
   //stop iot hub simulation
   stopIoTHubSimulation: (settingsJson) => ipcRenderer.invoke("StopSimulation:IoTHub", settingsJson),
 
+  //start iot hub subscription
+  startIoTHubSubscription: (settingsJson) => ipcRenderer.invoke("StartSubscription:IoTHub", settingsJson),
+
+  //stop iot hub subscription
+  stopIoTHubSubscription: (settingsJson) => ipcRenderer.invoke("StopSubscription:IoTHub", settingsJson),
+
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
 

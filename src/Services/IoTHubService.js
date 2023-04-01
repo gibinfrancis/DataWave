@@ -1,7 +1,8 @@
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const commonService = require('./CommonService.js');
-var _client;
+const commonService = require('./commonService.js');
+var _clientSend;
+var _clientReceive;
 var _settingsJson;
 var _mainWindow;
 let _totalCounter;
@@ -9,6 +10,7 @@ let _msgGenCounter;
 let _totalSuccessCounter;
 let _totalFailureCounter;
 let _cancellationRequest = false;
+let _subscriptionCancellationRequest = false;
 
 //start simulation based on the settings provided
 async function startIoTHubSimulation(settingsJson, mainWindow) {
@@ -22,7 +24,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
 
     //create iot hub device client
     printLogMessage("Trying to create client", "details");
-    _client = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
+    _clientSend = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
 
     //resetting counters and cancellation
     resetCountersAndCancellation();
@@ -53,7 +55,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
 
             //log message 
             printLogMessage("📝 Message prepared", "info");
-            printLogMessage("Message header" + "\r\n" + JSON.stringify(data.header, null, 2), "message");
+            printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
             printLogMessage("Message body" + "\r\n" + message.getData(), "message");
 
             if (_settingsJson.bulkSend == true)
@@ -61,7 +63,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
                 messages.push(message);
             else {
                 //send event 
-                await sendMessage(_client, message);
+                await sendMessage(_clientSend, message);
             }
 
             //check if total count reached, if its a fixed count simulation
@@ -75,7 +77,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
         //send message batch if messages are available
         if (_settingsJson.bulkSend == true && messages.length > 0) {
             //send message as batch
-            await sendBatchMessages(_client, messages);
+            await sendBatchMessages(_clientSend, messages);
         }
         //check if total count reached, if its a fixed count simulation
         if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
@@ -114,6 +116,33 @@ function connectToIoTHub(deviceConString, protocol) {
     return new Promise((resolve, reject) => {
         //create client
         let client = Client.fromConnectionString(deviceConString, protocol);
+        //opens connection
+        client.open(err => {
+            if (err) {
+                printLogMessage("🔴 Client connection failed", "info");
+                printLogMessage(err, "details");
+                reject(err);
+            }
+            else {
+                printLogMessage("🟢 Client connected", "info");
+                resolve(client);
+            }
+
+        });
+    })
+}
+
+
+
+//Connect to IoT Hub using the device connection string and protocol
+function connectToIoTHubWithSubscription(deviceConString, protocol) {
+    return new Promise((resolve, reject) => {
+        //create client
+        let client = Client.fromConnectionString(deviceConString, protocol);
+
+        //receive event
+        client.on("message", receivedMessageHandler);
+
         //opens connection
         client.open(err => {
             if (err) {
@@ -223,7 +252,7 @@ function updateCounters(success, count = 1) {
 function closeToIoTHubClient() {
     return new Promise((resolve, reject) => {
         //close the connection
-        _client.close(err => {
+        _clientSend.close(err => {
             if (err) {
                 printLogMessage("🔴 Error while closing connection", "info");
                 printLogMessage(err, "details")
@@ -255,6 +284,63 @@ function printLogMessage(message, type) {
     console.log(message);
 }
 
+
+
+
+//start subscription based on the settings provided
+async function startIoTHubSubscription(settingsJson, mainWindow) {
+
+    _settingsJson = settingsJson;
+    _mainWindow = mainWindow;
+    _subscriptionCancellationRequest = false;
+
+    //get respective protocol
+    printLogMessage("↘️ Starting subscription", "info");
+    const Protocol = getProtocol(_settingsJson.protocol);
+
+    //create iot hub device client
+    printLogMessage("Trying to create client", "details");
+    _clientReceive = await connectToIoTHubWithSubscription(_settingsJson.connection.connectionPram1, Protocol);
+
+    //promise here
+    await waitForStopSignal();
+
+    //close client connection
+    await closeToIoTHubClient();
+    printLogMessage("✅ Subscription completed", "info");
+
+}
+
+
+function waitForStopSignal() {
+    return new Promise((resolve) => {
+        const intervalId = setInterval(() => {
+            if (_subscriptionCancellationRequest) {
+                clearInterval(intervalId);
+                resolve();
+            }
+        }, 1000);
+    });
+}
+
+function receivedMessageHandler(msg) {
+
+    printLogMessage("📝 Message received", "info");
+    printLogMessage("Message body" + "\r\n" + msg.data, "message");
+    console.log(msg);
+    client.complete(msg, printResultFor('completed'));
+}
+
+//stop iot hub subscription
+async function stopIoTHubSubscription(settingsJson, mainWindow) {
+
+    _mainWindow = _mainWindow ?? mainWindow;
+    _subscriptionCancellationRequest = true;
+    printLogMessage("🚫 Subscription stop requested", "info");
+}
+
 //exporting functionalities
 exports.startIoTHubSimulation = startIoTHubSimulation;
 exports.stopIoTHubSimulation = stopIoTHubSimulation;
+exports.startIoTHubSubscription = startIoTHubSubscription;
+exports.stopIoTHubSubscription = stopIoTHubSubscription;

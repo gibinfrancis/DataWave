@@ -47,6 +47,12 @@ app.whenReady().then(() => {
   //iot hub simulation start handle
   ipcMain.handle('StopSimulation:IoTHub', async (event, settingsJson) => ioTHubService.stopIoTHubSimulation(settingsJson, mainWindow));
 
+  //iot hub subscription start handle
+  ipcMain.handle('StartSubscription:IoTHub', async (event, settingsJson) => ioTHubService.startIoTHubSubscription(settingsJson, mainWindow));
+
+  //iot hub subscription start handle
+  ipcMain.handle('StopSubscription:IoTHub', async (event, settingsJson) => ioTHubService.stopIoTHubSubscription(settingsJson, mainWindow));
+
   //generate a message
   ipcMain.handle('GenerateMessage', async (event, settingsJson) => commonService.getPreparedMessageAndHeader(settingsJson, 0));
 
