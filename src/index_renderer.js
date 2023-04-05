@@ -2,8 +2,9 @@
 var settingsJson = {
   direction: "send", //send/receive
   service: "iothub", //iothub/eventhub/servicebus/mqtt
-  messageBodyTemplate: "",
-  messageHeaderTemplate: "",
+  messageBodyTemplate: null,
+  messageHeaderTemplate: null,
+  messagePropertiesTemplate: null,
   placeholders: [],
   connection: {},
   protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
@@ -12,6 +13,7 @@ var settingsJson = {
   count: 0,
   bulkSend: false
 };
+
 //simulation flag
 var simulationInProgress = false;
 
@@ -19,13 +21,13 @@ var simulationInProgress = false;
 $(function () {
 
   //direction button click binding
-  $(".dir_btn").on("click", (e) => directionButtonClickHandler(e));
+  $("input[type=radio][name=dirOption]").on("change", directionButtonClickHandler);
 
   //service button click binding
-  $(".serv_btn").on("click", (e) => serviceButtonClickHandler(e));
+  $("input[type=radio][name=servOption]").on("change", serviceButtonClickHandler);
 
   //placeholders refresh button click binding
-  $("#placehold_gen_btn").on("click", () => placeholderGenButtonClickHandler());
+  $("#placehold_gen_btn").on("click", placeholderGenButtonClickHandler);
 
   //start button click event
   $("#cntl_start_btn").on("click", startButtonClickHandler);
@@ -33,14 +35,17 @@ $(function () {
   //stop button click event
   $("#cntl_stop_btn").on("click", stopButtonClickHandler);
 
-  //semd one button click event
-  $("#cntl_sendone_btn").on("click", sendOneButtonClickHandler);
-
   //view generated message button
-  $("#cntl_view_btn").on("click", viewButtonClickHandler);
+  $("#cntl_preview_btn").on("click", previewButtonClickHandler);
 
   //tab button click event
   $(".tab-head").on("click", (e) => tabHeadButtonClickHandler(e));
+
+  //notification close click event
+  $("#deleteNotification").on("click", closeNotificationButtonClickHandler);
+
+  //clear log button click event
+  $("#cntl_clear_btn").on("click", clearLogButtonClickHandler);
 });
 
 //on log update trigger
@@ -58,18 +63,43 @@ window.api.onCountUpdate((_event, countObj) => {
 
 
 //-----------------------------------------------------
-//-----------------VIEW BUTTON------------------------
+//-----------------CLEAR LOG BUTTON-----------
 //-----------------------------------------------------
-async function viewButtonClickHandler() {
+async function clearLogButtonClickHandler() {
+  $("#logDisplay").text("");
+}
+
+
+
+//-----------------------------------------------------
+//-----------------NOTIFICATION CLOSE BUTTON-----------
+//-----------------------------------------------------
+async function closeNotificationButtonClickHandler() {
+  $("#log_msg_lbl").parent().addClass("hidden");
+}
+
+
+//-----------------------------------------------------
+//-----------------VIEW BUTTON-------------------------
+//-----------------------------------------------------
+async function previewButtonClickHandler() {
 
   //prepare settings object
   prepareSettings();
+
+
+  //validate the settings provided
+  let validationRes = validateSettings("generate");
+
+  if (validationRes == false)
+    return;
 
   //invoke main service to get generated message
   const genMessage = await window.api.getGeneratedMessage(settingsJson);
 
   //print generated header message as log
-  printLogMessage(JSON.stringify(genMessage.header), "info");
+  if (genMessage.header != null)
+    printLogMessage(JSON.stringify(genMessage.header), "info");
 
   //print generated message as log
   printLogMessage(genMessage.message, "info");
@@ -168,18 +198,12 @@ function tabHeadButtonClickHandler(e) {
 
 
 //-----------------------------------------------------
-//-----------------DIRECTION BUTTONS-------------------
+//-----------------DIRECTION RADIO BUTTONS-------------
 //-----------------------------------------------------
-function directionButtonClickHandler(e) {
+function directionButtonClickHandler() {
 
   //get the button text as the chosen direction
-  settingsJson.direction = $(e.target)[0].innerText.toLowerCase();
-
-  //remove highlighted class from all buttons
-  $(".dir_btn").removeClass("is-link");
-
-  //add highlighted class to current button
-  $("#" + e.target.id).addClass("is-link");
+  settingsJson.direction = ("input[type=radio][name=dirOption]:checked").val();
 
   //update the connection settings params
   updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
@@ -189,18 +213,11 @@ function directionButtonClickHandler(e) {
 //-----------------------------------------------------
 //-----------------SERVICES BUTTONS--------------------
 //-----------------------------------------------------
-function serviceButtonClickHandler(e) {
+function serviceButtonClickHandler() {
+
 
   //get the button text as the chosen direction and remove spaces in it
-  settingsJson.service = $(e.target)[0]
-    .innerText.toLowerCase()
-    .replace(" ", "");
-
-  //remove highlighted class from all buttons
-  $(".serv_btn").removeClass("is-link");
-
-  //add highlighted class to current button
-  $("#" + e.target.id).addClass("is-link");
+  settingsJson.service = ("input[type=radio][name=servOption]:checked").val();
 
   //update the connection settings params
   updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
@@ -208,49 +225,29 @@ function serviceButtonClickHandler(e) {
 
 
 //-----------------------------------------------------
-//-----------------SEND ONE BUTTON------------------------
-//-----------------------------------------------------
-async function sendOneButtonClickHandler() {
-
-  //prepare settings object
-  prepareSettings();
-
-  //configuring values for single message
-  settingsJson.delay = 10;
-  settingsJson.batch = 1;
-  settingsJson.count = 1;
-
-  //validate the settings provided
-  let validationRes = validateSettings();
-
-  if (validationRes == true)
-    //invoke main service to start simulation
-    await window.api.startIoTHubSimulation(settingsJson);
-}
-
-//-----------------------------------------------------
 //-----------------START BUTTON------------------------
 //-----------------------------------------------------
 async function startButtonClickHandler() {
 
-  // //check already existing simulation
-  // if (simulationInProgress == true)
-  //   return
-
-  //in progress flag
-  simulationInProgress = true;
+  //check already existing simulation
+  if (simulationInProgress == true)
+    return
 
   //prepare settings object
   prepareSettings();
 
   //validate the settings provided
-  let validationRes = true;// validateSettings();
+  let validationRes = validateSettings(settingsJson.direction);
+
+  //check the validation is fine
+  if (validationRes == false)
+    return;
 
   //removing the attribute will show a flowing progress bar on screen
   $("#cntl_progress").removeAttr("value");
 
-  if (validationRes == false)
-    return;
+  //in progress flag
+  simulationInProgress = true;
 
   //invoke main service to start simulation
   if (settingsJson.direction == "send" && settingsJson.service == "iothub")
@@ -307,34 +304,23 @@ function printLogMessage(logMessage, type) {
 
 //print message
 function printMessage(message, type) {
-  $("#log_msg_lbl").removeClass("has-text-info-dark");
-  $("#log_msg_lbl").removeClass("has-text-danger-dark");
 
   if (type == "error") {
-    $("#log_msg_lbl").addClass("has-text-danger-dark");
+    //$("#log_msg_lbl").addClass("has-text-danger-dark");
   }
   else if (type == "info") {
-    $("#log_msg_lbl").addClass("has-text-info-dark");
+    //$("#log_msg_lbl").addClass("has-text-info-dark");
   }
   else if (type == "clear") {
-    $("#log_msg_lbl").text("");
+    //$("#log_msg_lbl").text("");
+    $("#log_msg_lbl").text("&nbsp;");
+    $("#log_msg_lbl").parent().addClass("hidden");
     return;
   }
-  $("#log_msg_lbl").text("ⓘ " + message);
+  $("#log_msg_lbl").text(message);
+  $("#log_msg_lbl").parent().removeClass("hidden");
 }
 
-
-
-//update placeholder generation params to settings
-function updatePhGenParametersToSettings(placeholders) {
-
-  //loop though the placeholders
-  for (var i = 0; i < placeholders.length; i++) {
-    placeholders[i].param1 = getValueInType($("#ph_" + placeholders[i].id + "_txt1").val(), "string", null);
-    placeholders[i].param2 = getValueInType($("#ph_" + placeholders[i].id + "_txt2").val(), "string", null);
-    placeholders[i].param3 = getValueInType($("#ph_" + placeholders[i].id + "_txt3").val(), "string", null);
-  }
-}
 
 
 //update placeholder generation items parameters
@@ -388,6 +374,8 @@ function prepareSettings() {
   settingsJson.messageBodyTemplate = getValueInType($("#msg_body_txt").val(), "string", null);
   //updating header template
   settingsJson.messageHeaderTemplate = getValueInType($("#msg_header_txt").val(), "string", null);
+  //updating properties template
+  settingsJson.messagePropertiesTemplate = getValueInType($("#msg_prop_txt").val(), "string", null);
   //updating delay settings
   settingsJson.delay = getValueInType($("#set_delay_txt").val(), "int", 10);
   //updating batch size settings
@@ -396,28 +384,35 @@ function prepareSettings() {
   settingsJson.count = getValueInType($("#set_count_txt").val(), "int", 0);
   //bulk send option
   settingsJson.bulkSend = $("#set_bulk_check").prop("checked") == true;
-
   //update placeholder generation parameters to settings
-  updatePhGenParametersToSettings(settingsJson.placeholders);
+  //loop though the placeholders
+  for (var i = 0; i < settingsJson.placeholders.length; i++) {
+    settingsJson.placeholders[i].param1 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt1").val(), "string", null);
+    settingsJson.placeholders[i].param2 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt2").val(), "string", null);
+    settingsJson.placeholders[i].param3 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt3").val(), "string", null);
+  }
 
 }
 
 
 //validate the settings provided
-function validateSettings() {
+function validateSettings(methodName) {
 
   if (settingsJson.messageBodyTemplate == null) {
     printMessage("Please provide valid message body", "error");
-    return false;
-  }
-  else if (settingsJson.direction == "send" && settingsJson.connection.connectionPram1 == null) {
-    printMessage("Please provide valid connection string", "error");
     return false;
   }
   else if (settingsJson.messageBodyTemplate.includes("{{") && settingsJson.placeholders.length == 0) {
     printMessage("Please generate placeholders", "error");
     return false;
   }
+  else if (methodName == "send"
+    && settingsJson.direction == "send"
+    && settingsJson.connection.connectionPram1 == null) {
+    printMessage("Please provide valid connection string", "error");
+    return false;
+  }
+
   printMessage("", "clear");
   return true;
 
@@ -444,10 +439,10 @@ const phCardTemplate = `
   <div class="card-content p-2">
     <div class="columns mb-0">
       <div class="column is-6">
-        <div class="label is-small pt-2">{{placeholderName}}</div>
+        <div class="label pt-2">{{placeholderName}}</div>
       </div>
       <div class="column is-6">
-        <div class="select is-small is-fullwidth">
+        <div class="select is-fullwidth">
           <select id="ph_opt_{{placeholderName}}_sel" data-name="{{placeholderName}}">
             <!-- string -->
             <option value="stringRandom" selected>String-Random</option>
@@ -479,15 +474,15 @@ const phCardTemplate = `
     </div>
     <div class="columns mb-0">
       <div class="column is-6">
-        <input class="input is-small" id="ph_{{placeholderName}}_txt1" type="text" placeholder="Min" />
+        <input class="input" id="ph_{{placeholderName}}_txt1" type="text" placeholder="Min" />
       </div>
       <div class="column is-6">
-        <input class="input is-small" id="ph_{{placeholderName}}_txt2" type="text" placeholder="Max" />
+        <input class="input" id="ph_{{placeholderName}}_txt2" type="text" placeholder="Max" />
       </div>
     </div>
     <div class="columns mb-0">
       <div class="column is-12">
-        <input class="input is-small" id="ph_{{placeholderName}}_txt3" type="text" placeholder="List" />
+        <input class="input" id="ph_{{placeholderName}}_txt3" type="text" placeholder="List" />
       </div>
     </div>
   </div>          

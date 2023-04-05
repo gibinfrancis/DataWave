@@ -1,34 +1,117 @@
-.bb-1-light {
-  border-bottom: #afafaf solid 1px;
-}
-
-.bt-1-light {
-  border-top: #afafaf solid 1px;
-}
-
-.bl-1-light {
-  border-left: #afafaf solid 1px;
-}
-
-.w-100 {
+/* ============= MAIN SECTION =====================*/
+/* ===============================================*/
+html,
+body {
+  height: 100%;
   width: 100%;
+  margin: 0;
+  font-size: 12px;
 }
 
-#logWrap {
-  height: 275px;
+.mainWrap {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+  grid-template-rows: 86% 6% 4% 4%;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "leftPaneT centerPane rightPane"
+    "leftPaneB centerPane rightPane"
+    "footerL centerPane rightPane"
+    "footerL footerC footerR";
+}
+
+
+.leftPaneT {
+  grid-area: leftPaneT;
+  background-color: #f3f3f3;
+}
+
+.leftPaneB {
+  grid-area: leftPaneB;
+  background-color: #f3f3f3;
+}
+
+.rightPane {
+  grid-area: rightPane;
+  background-color: #f3f3f3;
   overflow-y: auto;
 }
 
 
-#logHeadingWrap .checkbox {
-  font-size: .75rem;
+.footerC {
+  grid-area: footerC;
 }
 
-#paramWrap {
-  max-height: 600px;
-  overflow-y: auto;
-  overflow-x: hidden;
+.footerR {
+  grid-area: footerR;
+  background-color: #f3f3f3;
 }
+
+.footerL {
+  grid-area: footerL;
+  background-color: #f3f3f3;
+}
+
+.centerPane {
+  grid-area: centerPane;
+  overflow-y: auto;
+}
+
+/* ============= RADIO BUTTON STYLES =============*/
+/* ===============================================*/
+
+.l-radio {
+  width: 45%;
+  padding: 4px;
+  border-radius: 50px;
+  display: inline-flex;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 3px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l-radio:hover,
+.l-radio:focus-within {
+  background: rgba(159, 159, 159, 0.1);
+}
+
+.l-radio input {
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: none;
+  border: 0;
+  box-shadow: inset 0 0 0 1px #9F9F9F;
+  box-shadow: inset 0 0 0 1.5px #9F9F9F;
+  appearance: none;
+  padding: 0;
+  margin: 0;
+  transition: box-shadow 150ms cubic-bezier(0.95, 0.15, 0.5, 1.25);
+  pointer-events: none;
+}
+
+.l-radio input:focus {
+  outline: none;
+}
+
+.l-radio input:checked {
+  box-shadow: inset 0 0 0 5px #3850b7;
+}
+
+.l-radio span {
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 15px;
+  padding: 0 8px;
+}
+
+/* ================= SCROLL STYLES ===============*/
+/* ===============================================*/
 
 /* width */
 ::-webkit-scrollbar {
@@ -50,15 +133,50 @@
   background: #555;
 }
 
+/* ================= OTHER STYLES =================*/
+/* ===============================================*/
 
-label.checkbox {
-  font-size: .75rem;
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.pt-30px {
-  padding-top: 30px;
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
+
+
+.highlightBar {
+  height: 4px;
+  width: 100%;
+  margin-bottom: 5px;
+  ;
+}
+
+/* ================= PAGE STYLES =================*/
+/* ===============================================*/
+
 
 .hidden {
   display: none;
+}
+
+.h3px {
+  height: 3px;
+}
+
+.f12px {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.w100 {
+  width: 100%;
+}
+
+.h100 {
+  height: 100%;
 }

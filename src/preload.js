@@ -11,13 +11,6 @@ window.addEventListener("DOMContentLoaded", () => {
     replaceText(`${dependency}-version`, process.versions[dependency]);
   }
 
-
-  // ipcRenderer.on('data-to-renderer', (event, data) => {
-  //   // do something with the data
-  //   console.log(data);
-  //   // send data back to the main process
-  // });
-
 });
 
 //exposing api to renderer pages
@@ -35,14 +28,15 @@ contextBridge.exposeInMainWorld("api", {
   //stop iot hub subscription
   stopIoTHubSubscription: (settingsJson) => ipcRenderer.invoke("StopSubscription:IoTHub", settingsJson),
 
+  //get generated message
+  getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
+
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on('LogUpdate', message, type),
 
   //update count
   onCountUpdate: (countObj) => ipcRenderer.on('CountUpdate', countObj),
 
-  //get generated message
-  getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
 
 
 });

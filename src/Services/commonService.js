@@ -16,7 +16,8 @@ function getPreparedMessageAndHeader(settingsJson, iteration) {
   data.message = genMessage;
   try {
     //parsing header
-    data.header = JSON.parse(genHeader);
+    if (genHeader != null)
+      data.header = JSON.parse(genHeader);
   }
   catch (ex) {
     //catch parse error
@@ -32,7 +33,7 @@ function replaceTemplateWithPlaceholder(template, data) {
   //creates the pattern for placeholder identification
   const pattern = /{{\s*(\w+?)\s*}}/g; // {{property}}
   //replace the template with data
-  return template.replace(pattern, (_, token) => data[token] || "");
+  return template?.replace(pattern, (_, token) => data[token] || "");
 }
 
 //function to generate text content for placeholders based on its option

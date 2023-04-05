@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
-const ioTHubService = require('./Services/IoTHubService.js');
-const commonService = require('./Services/CommonService.js');
+const ioTHubService = require("./services/IoTHubService.js");
+const commonService = require("./services/CommonService.js");
 const path = require("path");
 var mainWindow;
 
@@ -9,7 +9,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 1200,
+    minWidth: 1200,
+    minHeight: 700,
     autoHideMenuBar: true,
+    //titleBarStyle: 'hidden',
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true,
@@ -17,17 +20,6 @@ const createWindow = () => {
     },
     icon: __dirname + "/assets/images/IoTSimulator.icns",
   });
-
-  //on the event of starting simulation
-  // ipcMain.on("startSimulation", (event, config, message) => {
-  //   //accept the event and cascade it back to respective service
-  //   //mainWindow.webContents.send(config.service + "Simulation", config, message);
-  //   startIoTHubMessageSimulation();
-  // });
-
-  // // ipcMain.on('counter-value', (_event, value) => {
-  // //   console.log(value) // will print value to Node console
-  // // })
 
   // and load the index.html of the app.
   mainWindow.loadFile("src/index.html");
@@ -44,13 +36,13 @@ app.whenReady().then(() => {
   //iot hub simulation start handle
   ipcMain.handle('StartSimulation:IoTHub', async (event, settingsJson) => ioTHubService.startIoTHubSimulation(settingsJson, mainWindow));
 
-  //iot hub simulation start handle
+  //iot hub simulation stop handle
   ipcMain.handle('StopSimulation:IoTHub', async (event, settingsJson) => ioTHubService.stopIoTHubSimulation(settingsJson, mainWindow));
 
   //iot hub subscription start handle
   ipcMain.handle('StartSubscription:IoTHub', async (event, settingsJson) => ioTHubService.startIoTHubSubscription(settingsJson, mainWindow));
 
-  //iot hub subscription start handle
+  //iot hub subscription stop handle
   ipcMain.handle('StopSubscription:IoTHub', async (event, settingsJson) => ioTHubService.stopIoTHubSubscription(settingsJson, mainWindow));
 
   //generate a message

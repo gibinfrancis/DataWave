@@ -1,6 +1,7 @@
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const commonService = require('./commonService.js');
+const commonService = require('./CommonService.js');
+
 var _clientSend;
 var _clientReceive;
 var _settingsJson;
@@ -41,7 +42,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
             const data = commonService.getPreparedMessageAndHeader(_settingsJson, _msgGenCounter);
 
             //in case of message preparation error
-            if (data.error) {
+            if (data?.error) {
                 _cancellationRequest = true;
                 printLogMessage("❌ Error while parsing header : " + data.error, "info");
                 break;
@@ -51,11 +52,13 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
             const message = new Message(data.message);
 
             //set properties
-            setHeaderPropertiesToMessage(message, data.header);
+            if (data.header != null)
+                setHeaderPropertiesToMessage(message, data.header);
 
             //log message 
             printLogMessage("📝 Message prepared", "info");
-            printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
+            if (message?.properties?.propertyList != null)
+                printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
             printLogMessage("Message body" + "\r\n" + message.getData(), "message");
 
             if (_settingsJson.bulkSend == true)
@@ -324,7 +327,6 @@ function waitForStopSignal() {
 }
 
 function receivedMessageHandler(msg) {
-
     printLogMessage("📝 Message received", "info");
     printLogMessage("Message body" + "\r\n" + msg.data, "message");
     console.log(msg);
