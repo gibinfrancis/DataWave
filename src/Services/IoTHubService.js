@@ -1,9 +1,10 @@
 const Client = require("azure-iot-device").Client;
 const Message = require("azure-iot-device").Message;
-const commonService = require('./CommonService.js');
+const commonService = require("./CommonService.js");
 
 var _clientSend;
 var _clientReceive;
+
 var _settingsJson;
 var _mainWindow;
 let _totalCounter;
@@ -100,7 +101,7 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
     }
 
     //close client connection
-    await closeToIoTHubClient();
+    await closeToIoTHubClient(_clientSend);
     printLogMessage("✅ Simulation completed", "info");
 
 }
@@ -252,10 +253,10 @@ function updateCounters(success, count = 1) {
 }
 
 //Close connection to IoT Hub
-function closeToIoTHubClient() {
+function closeToIoTHubClient(client) {
     return new Promise((resolve, reject) => {
         //close the connection
-        _clientSend.close(err => {
+        client.close(err => {
             if (err) {
                 printLogMessage("🔴 Error while closing connection", "info");
                 printLogMessage(err, "details")
@@ -309,12 +310,12 @@ async function startIoTHubSubscription(settingsJson, mainWindow) {
     await waitForStopSignal();
 
     //close client connection
-    await closeToIoTHubClient();
+    await closeToIoTHubClient(_clientReceive);
     printLogMessage("✅ Subscription completed", "info");
 
 }
 
-
+//waiting for a stop signal for a period of time
 function waitForStopSignal() {
     return new Promise((resolve) => {
         const intervalId = setInterval(() => {
@@ -326,11 +327,14 @@ function waitForStopSignal() {
     });
 }
 
+//receive message handler
 function receivedMessageHandler(msg) {
     printLogMessage("📝 Message received", "info");
+
+    if (msg?.properties?.propertyList != null)
+        printLogMessage("Message header" + "\r\n" + JSON.stringify(msg.properties.propertyList, null, 2), "message");
     printLogMessage("Message body" + "\r\n" + msg.data, "message");
-    console.log(msg);
-    client.complete(msg, printResultFor('completed'));
+    _clientReceive.complete(msg);
 }
 
 //stop iot hub subscription

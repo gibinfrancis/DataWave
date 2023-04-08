@@ -46,7 +46,12 @@ $(function () {
 
   //clear log button click event
   $("#cntl_clear_btn").on("click", clearLogButtonClickHandler);
+
+  //hide unhide button click event
+  $("#cntl_hide_btn").on("click", hideButtonClickHandler);
 });
+
+
 
 //on log update trigger
 window.api.onLogUpdate((_event, message, type) => {
@@ -60,6 +65,21 @@ window.api.onCountUpdate((_event, countObj) => {
   $("#count_fail_lbl").text(countObj.failure);
   $("#count_total_lbl").text(countObj.total);
 });
+
+//-----------------------------------------------------
+//-----------------HIDE BUTTON-------------------------
+//-----------------------------------------------------
+async function hideButtonClickHandler() {
+  if ($("#cntl_hide_img").attr("src").endsWith("unhide_icon.png")) {
+    $("#cntl_hide_img").attr("src", "../assets/images/hide_icon.png");
+    $("#templateSection").removeClass("hidden");
+  }
+  else {
+    $("#cntl_hide_img").attr("src", "../assets/images/unhide_icon.png");
+    $("#templateSection").addClass("hidden");
+  }
+}
+
 
 
 //-----------------------------------------------------
@@ -111,8 +131,20 @@ async function previewButtonClickHandler() {
 //-----------------------------------------------------
 function placeholderGenButtonClickHandler() {
 
+
+  //prepare settings object
+  prepareSettings();
+
   //get the template content
-  const templateString = $("#msg_body_txt").val() + " " + $("#msg_header_txt").val();
+  const templateString = settingsJson.messageBodyTemplate
+    + " " + settingsJson.messageHeaderTemplate
+    + " " + settingsJson.messagePropertiesTemplate;
+
+  //validate the settings provided
+  let validationRes = validateSettings("placeholderGenerate");
+
+  if (validationRes == false)
+    return;
 
   //get placeholder strings from the template
   const placeholders = templateString
@@ -203,7 +235,7 @@ function tabHeadButtonClickHandler(e) {
 function directionButtonClickHandler() {
 
   //get the button text as the chosen direction
-  settingsJson.direction = ("input[type=radio][name=dirOption]:checked").val();
+  settingsJson.direction = $("input[type=radio][name=dirOption]:checked").val();
 
   //update the connection settings params
   updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
@@ -217,7 +249,7 @@ function serviceButtonClickHandler() {
 
 
   //get the button text as the chosen direction and remove spaces in it
-  settingsJson.service = ("input[type=radio][name=servOption]:checked").val();
+  settingsJson.service = $("input[type=radio][name=servOption]:checked").val();
 
   //update the connection settings params
   updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
@@ -254,6 +286,10 @@ async function startButtonClickHandler() {
     await window.api.startIoTHubSimulation(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
     await window.api.startIoTHubSubscription(settingsJson);
+  else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
+    await window.api.startEventHubSimulation(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
+    await window.api.startEventHubSubscription(settingsJson);
 
   //setting 0 will disable the continuous flow of progress bar
   $("#cntl_progress").attr("value", 0);
@@ -273,6 +309,10 @@ async function stopButtonClickHandler() {
     await window.api.stopIoTHubSimulation(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
     await window.api.stopIoTHubSubscription(settingsJson);
+  else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
+    await window.api.stopEventHubSimulation(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
+    await window.api.stopEventHubSubscription(settingsJson);
 
 }
 
@@ -353,11 +393,26 @@ function updateConSettingsGenParams(service, direction) {
 
   //check if both param2 is avaiable or not, param 1 will always be availablee, 
   conSettingGenOptions[objIndex].param2 == null
-    ? $("#con_string_lbl2").parent().parent().hide()
-    : $("#con_string_lbl2").parent().parent().show();
+    ? $("#con_string_lbl2").parent().hide()
+    : $("#con_string_lbl2").parent().show();
+
+  conSettingGenOptions[objIndex].param3 == null
+    ? $("#con_string_lbl3").parent().hide()
+    : $("#con_string_lbl3").parent().show();
+
+  conSettingGenOptions[objIndex].param4 == null
+    ? $("#con_string_lbl4").parent().hide()
+    : $("#con_string_lbl4").parent().show();
+
+  conSettingGenOptions[objIndex].param5 == null
+    ? $("#con_string_lbl5").parent().hide()
+    : $("#con_string_lbl5").parent().show();
 
   $("#con_string_txt1").attr("placeholder", conSettingGenOptions[objIndex].param1);
   $("#con_string_txt2").attr("placeholder", conSettingGenOptions[objIndex].param2);
+  $("#con_string_txt3").attr("placeholder", conSettingGenOptions[objIndex].param3);
+  $("#con_string_txt4").attr("placeholder", conSettingGenOptions[objIndex].param4);
+  $("#con_string_txt5").attr("placeholder", conSettingGenOptions[objIndex].param5);
 
 }
 
@@ -367,7 +422,10 @@ function prepareSettings() {
   //updating connection settings
   settingsJson.connection = {
     connectionPram1: getValueInType($("#con_string_txt1").val(), "string", null),
-    connectionPram2: getValueInType($("#con_string_txt2").val(), "string", null)
+    connectionPram2: getValueInType($("#con_string_txt2").val(), "string", null),
+    connectionPram3: getValueInType($("#con_string_txt3").val(), "string", null),
+    connectionPram4: getValueInType($("#con_string_txt4").val(), "string", null),
+    connectionPram5: getValueInType($("#con_string_txt5").val(), "string", null)
   };
 
   //updating message template 
@@ -398,18 +456,27 @@ function prepareSettings() {
 //validate the settings provided
 function validateSettings(methodName) {
 
-  if (settingsJson.messageBodyTemplate == null) {
+  if ((methodName == "send" || methodName == "generate")
+    && settingsJson.messageBodyTemplate == null) {
     printMessage("Please provide valid message body", "error");
     return false;
   }
-  else if (settingsJson.messageBodyTemplate.includes("{{") && settingsJson.placeholders.length == 0) {
+  else if ((methodName == "send" || methodName == "generate")
+    && settingsJson.messageBodyTemplate.includes("{{")
+    && settingsJson.placeholders.length == 0) {
     printMessage("Please generate placeholders", "error");
     return false;
   }
-  else if (methodName == "send"
-    && settingsJson.direction == "send"
+  else if ((methodName == "send" || methodName == "receive")
     && settingsJson.connection.connectionPram1 == null) {
     printMessage("Please provide valid connection string", "error");
+    return false;
+  }
+  if ((methodName == "placeholderGenerate")
+    && settingsJson.messageBodyTemplate == null
+    && settingsJson.messageHeaderTemplate == null
+    && settingsJson.messagePropertiesTemplate == null) {
+    printMessage("Please provide valid message body", "error");
     return false;
   }
 
@@ -520,7 +587,11 @@ var conSettingGenOptions = [
   {
     name: "eventhub",
     direction: "receive",
-    param1: "Event hub connection string"
+    param1: "Event hub namespace connection string",
+    param2: "Event hub name",
+    param3: "Consumer group name",
+    param4: "Storage account connection string",
+    param5: "Storage account container name"
   },
   {
     name: "servicebus",

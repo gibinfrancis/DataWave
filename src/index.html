@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IoT Simulator</title>
+  <title>IoT Simulator - Beta</title>
   <!-- styles -->
   <link rel="stylesheet" href="../node_modules/bulma/css/bulma.min.css" />
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -74,7 +74,7 @@
           <div class="field">
             <label class="label f12px" id="con_string_lbl1">Connection String</label>
             <div class="control">
-              <input class="input" type="text" placeholder="Connection String" id="con_string_txt1" />
+              <input class="input" type="text" placeholder="Device connection string" id="con_string_txt1" />
             </div>
           </div>
 
@@ -82,6 +82,24 @@
             <label class="label f12px" id="con_string_lbl2">Storage Connection String</label>
             <div class="control">
               <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt2" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl3">Storage Connection String</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt3" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl4">Storage Connection String</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt4" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl5">Storage Connection String</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt5" />
             </div>
           </div>
 
@@ -113,15 +131,15 @@
     <!-- left pane bottom section -->
     <div class="leftPaneB p-2">
       <div class="columns  m-1">
-        <div class="column h100 pt-0 pb-0">
+        <div class="column h100 pt-0 pb-0 has-text-centered">
           <div class="highlightBar has-background-primary"></div>
           <label id="count_success_lbl" class="is-outlined">0</label>
         </div>
-        <div class="column pt-0 pb-0">
+        <div class="column pt-0 pb-0 has-text-centered">
           <div class="highlightBar has-background-danger"></div>
           <label id="count_fail_lbl" class="is-outlined">0</label>
         </div>
-        <div class="column pt-0 pb-0">
+        <div class="column pt-0 pb-0 has-text-centered">
           <div class="highlightBar has-background-info"></div>
           <label id="count_total_lbl" class="is-outlined">0</label>
         </div>
@@ -134,30 +152,32 @@
       <!-- other controls -->
       <div class="columns m-1">
 
+        <div class="column pt-0 pb-0"></div>
+
         <div class="column pt-0 pb-0">
           <!-- reset button -->
-          <button class="button is-light is-fullwidth is-outlined" disabled id="cntl_save_btn"><img
-              src="../assets/images/save_icon.png" width="20px" /></button>
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Save json" disabled
+            id="cntl_save_btn"><img src="../assets/images/save_icon.png" width="20px" /></button>
         </div>
         <div class="column pt-0 pb-0">
           <!-- reset button -->
-          <button class="button is-light is-fullwidth is-outlined" disabled id="cntl_load_btn"><img
-              src="../assets/images/load_icon.png" width="20px" /></button>
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Import json" disabled
+            id="cntl_load_btn"><img src="../assets/images/load_icon.png" width="20px" /></button>
         </div>
         <div class="column pt-0 pb-0">
           <!-- reset button -->
-          <button class="button is-light is-fullwidth is-outlined" disabled id="cntl_reset_btn"><img
-              src="../assets/images/reset_icon.png" width="19px" /></span></button>
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Reset" disabled
+            id="cntl_reset_btn"><img src="../assets/images/reset_icon.png" width="19px" /></span></button>
         </div>
         <div class="column pt-0 pb-0">
           <!-- reset button -->
-          <button class="button is-light is-fullwidth is-outlined" title="Clear logs" id="cntl_clear_btn"><img
-              src="../assets/images/cloear_log_icon.png" width="20px" /></button>
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Clear logs"
+            id="cntl_clear_btn"><img src="../assets/images/clear_log_icon.png" width="20px" /></button>
         </div>
         <div class="column pt-0 pb-0">
           <!-- hide button -->
-          <button class="button is-light is-fullwidth is-outlined" title="Hide placeholders" id="cntl_hide_btn"><img
-              src="../assets/images/hide_icon.png" width="20px" /></button>
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Hide/View placeholders"
+            id="cntl_hide_btn"><img src="../assets/images/hide_icon.png" width="20px" id="cntl_hide_img" /></button>
         </div>
 
       </div>
@@ -186,8 +206,9 @@
     </div>
 
     <!-- footer right panel -->
-    <div class="footerR has-text-right">
-      <h4>Made with I♥️T</h4>
+    <div class="footerR has-text-centered has-text-grey">
+      <hr class="has-background-grey-lighter m-1" />
+      <h2>Made with I♥️T</h2>
     </div>
 
     <!-- footer left panel -->
@@ -217,35 +238,39 @@
     <!-- main center pane -->
     <div class="centerPane p-2">
 
-      <!-- tab heading -->
-      <div class="tabs is-boxed mb-3">
-        <ul>
-          <li class="is-active">
-            <a class="tab-head" id="msg_body_tab">Message Body Template</a>
-          </li>
-          <li>
-            <a class="tab-head" id="msg_header_tab">Message Header Template</a>
-          </li>
-          <li>
-            <a class="tab-head" id="msg_prop_tab">Message Properties Template</a>
-          </li>
-        </ul>
-      </div>
+      <div id="templateSection">
 
-      <!-- tab body -->
+        <!-- tab heading -->
+        <div class="tabs is-boxed mb-3">
+          <ul>
+            <li class="is-active">
+              <a class="tab-head" id="msg_body_tab">Message Body Template</a>
+            </li>
+            <li>
+              <a class="tab-head" id="msg_header_tab">Message Header Template</a>
+            </li>
+            <li>
+              <a class="tab-head" id="msg_prop_tab">Message Properties Template</a>
+            </li>
+          </ul>
+        </div>
 
-      <div class="tab-content" id="msg_body_tab_content" class="mb-2">
-        <textarea id="msg_body_txt" class="textarea"
-          placeholder="json template for your message and wrap variables in {{}}" rows="16"></textarea>
-      </div>
-      <div class="tab-content hidden" id="msg_header_tab_content" class="mb-2">
-        <textarea id="msg_header_txt" class="textarea"
-          placeholder="single level json template for your header json, wrap variables in {{}}" rows="16"></textarea>
-      </div>
-      <div class="tab-content hidden" id="msg_prop_tab_content" class="mb-2">
-        <textarea id="msg_prop_txt" class="textarea"
-          placeholder="single level json template for your message properties json, wrap variables in {{}}"
-          rows="16"></textarea>
+        <!-- tab body -->
+        <div class="tab-content" id="msg_body_tab_content" class="mb-2">
+          <textarea id="msg_body_txt" class="textarea"
+            placeholder="json template for your message and wrap placeholders in {{}}" rows="16"></textarea>
+        </div>
+        <div class="tab-content hidden" id="msg_header_tab_content" class="mb-2">
+          <textarea id="msg_header_txt" class="textarea"
+            placeholder="single level json template for your header json, wrap placeholders in {{}}"
+            rows="16"></textarea>
+        </div>
+        <div class="tab-content hidden" id="msg_prop_tab_content" class="mb-2">
+          <textarea id="msg_prop_txt" class="textarea"
+            placeholder="single level json template for your message properties json, wrap placeholders in {{}}"
+            rows="16"></textarea>
+        </div>
+
       </div>
 
       <!-- log section -->
