@@ -421,11 +421,11 @@ function updateConSettingsGenParams(service, direction) {
 function prepareSettings() {
   //updating connection settings
   settingsJson.connection = {
-    connectionPram1: getValueInType($("#con_string_txt1").val(), "string", null),
-    connectionPram2: getValueInType($("#con_string_txt2").val(), "string", null),
-    connectionPram3: getValueInType($("#con_string_txt3").val(), "string", null),
-    connectionPram4: getValueInType($("#con_string_txt4").val(), "string", null),
-    connectionPram5: getValueInType($("#con_string_txt5").val(), "string", null)
+    param1: getValueInType($("#con_string_txt1").val(), "string", null),
+    param2: getValueInType($("#con_string_txt2").val(), "string", null),
+    param3: getValueInType($("#con_string_txt3").val(), "string", null),
+    param4: getValueInType($("#con_string_txt4").val(), "string", null),
+    param5: getValueInType($("#con_string_txt5").val(), "string", null)
   };
 
   //updating message template 

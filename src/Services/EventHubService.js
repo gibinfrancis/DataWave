@@ -29,7 +29,7 @@ async function startEventHubSimulation(settingsJson, mainWindow) {
 
   //create Event hub device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createEventHubClient(_settingsJson.connection.connectionPram1);
+  _clientSend = await createEventHubClient(_settingsJson.connection.param1);
 
   //crete event hub message batch
   _msgBatch = await _clientSend.createBatch(); // createEventHubBatch(_clientSend);
@@ -153,45 +153,43 @@ function createEventHubBatch(client) {
 
 //Connect to Event Hub using the device connection string and protocol
 function connectToEventHubWithSubscription(settingsJson) {
-  return new Promise((resolve, reject) => {
 
-    // Create a blob container client and a blob checkpoint store using the client.
-    const containerClient = new ContainerClient(
-      settingsJson.connection.connectionPram4,
-      settingsJson.connection.connectionPram5,
-    );
-    const checkpointStore = new BlobCheckpointStore(containerClient);
+  // Create a blob container client and a blob checkpoint store using the client.
+  const containerClient = new ContainerClient(
+    settingsJson.connection.param4,
+    settingsJson.connection.param5,
+  );
+  const checkpointStore = new BlobCheckpointStore(containerClient);
 
-    //create client
-    let client = new EventHubConsumerClient(settingsJson.connection.connectionPram3,
-      settingsJson.connection.connectionPram1,
-      settingsJson.connection.connectionPram2, checkpointStore);;
+  //create client
+  let client = new EventHubConsumerClient(settingsJson.connection.param3,
+    settingsJson.connection.param1,
+    settingsJson.connection.param2, checkpointStore);;
 
-    //receive event
-    _messageSubscription = client.subscribe(
-      {
-        processEvents: async (events, context) => receivedMessageHandler(events, context),
-        processError: async (err, context) => {
-          printLogMessage("🔴 Client connection failed", "info");
-          printLogMessage(err, "details");
-        },
+  //receive event
+  _messageSubscription = client.subscribe(
+    {
+      processEvents: async (events, context) => receivedMessageHandler(events, context),
+      processError: async (err, context) => {
+        printLogMessage("🔴 Client connection failed", "info");
+        printLogMessage(err, "details");
       },
-      { startPosition: earliestEventPosition }
-    );
+    },
+    { startPosition: earliestEventPosition }
+  );
 
-    // //opens connection
-    // client.open(err => {
-    //   if (err) {
-    //     printLogMessage("🔴 Client connection failed", "info");
-    //     printLogMessage(err, "details");
-    //     reject(err);
-    //   }
-    //   else {
-    //     printLogMessage("🟢 Client connected", "info");
-    //     resolve(client);
-    //   }
+  // //opens connection
+  // client.open(err => {
+  //   if (err) {
+  //     printLogMessage("🔴 Client connection failed", "info");
+  //     printLogMessage(err, "details");
+  //     reject(err);
+  //   }
+  //   else {
+  //     printLogMessage("🟢 Client connected", "info");
+  //     resolve(client);
+  //   }
 
-  });
 }
 
 
@@ -328,7 +326,7 @@ async function startEventHubSubscription(settingsJson, mainWindow) {
 
   //create Event hub device client
   printLogMessage("Trying to create client", "details");
-  _clientReceive = await connectToEventHubWithSubscription(_settingsJson);
+  _clientReceive = connectToEventHubWithSubscription(_settingsJson);
 
   //promise here
   await waitForStopSignal();

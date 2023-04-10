@@ -7,10 +7,12 @@ var _clientReceive;
 
 var _settingsJson;
 var _mainWindow;
+
 let _totalCounter;
 let _msgGenCounter;
 let _totalSuccessCounter;
 let _totalFailureCounter;
+
 let _cancellationRequest = false;
 let _subscriptionCancellationRequest = false;
 
@@ -22,14 +24,18 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
 
     //get respective protocol
     printLogMessage("🚀 Starting simulation", "info");
-    const Protocol = getProtocol(_settingsJson.protocol);
+    const protocol = getProtocol(_settingsJson.protocol);
 
-    //create iot hub device client
+    //create client
     printLogMessage("Trying to create client", "details");
-    _clientSend = await connectToIoTHub(_settingsJson.connection.connectionPram1, Protocol);
+    _clientSend = Client.fromConnectionString(_settingsJson.connection.param1, protocol);
 
-    //resetting counters and cancellation
-    resetCountersAndCancellation();
+    //connect to iot hub device client
+    printLogMessage("Trying to connect to client", "details");
+    await connectToIoTHub(_clientSend);
+
+    //resetting counters and variables
+    resetCountersAndVariables();
 
     //timer trigger
     while (true) {
@@ -39,13 +45,13 @@ async function startIoTHubSimulation(settingsJson, mainWindow) {
 
         for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
 
-            // Create a message and send it to the IoT Hub every two seconds
+            // Create a message
             const data = commonService.getPreparedMessageAndHeader(_settingsJson, _msgGenCounter);
 
             //in case of message preparation error
             if (data?.error) {
                 _cancellationRequest = true;
-                printLogMessage("❌ Error while parsing header : " + data.error, "info");
+                printLogMessage("❌ Error while preparing message : " + data.error, "info");
                 break;
             }
 
@@ -116,10 +122,8 @@ async function stopIoTHubSimulation(settingsJson, mainWindow) {
 
 
 //Connect to IoT Hub using the device connection string and protocol
-function connectToIoTHub(deviceConString, protocol) {
+function connectToIoTHub(client) {
     return new Promise((resolve, reject) => {
-        //create client
-        let client = Client.fromConnectionString(deviceConString, protocol);
         //opens connection
         client.open(err => {
             if (err) {
@@ -225,7 +229,7 @@ function setHeaderPropertiesToMessage(message, header) {
 }
 
 //reset counters
-function resetCountersAndCancellation() {
+function resetCountersAndVariables() {
     _totalCounter = 0;
     _totalSuccessCounter = 0;
     _totalFailureCounter = 0;
@@ -273,12 +277,17 @@ function closeToIoTHubClient(client) {
 
 //get the respective protocol object
 function getProtocol(protocol) {
+    protocol = protocol?.toLower().trim()
     if (protocol == "mqttws")
         return require("azure-iot-device-mqtt").MqttWs;
-    else if (protocol == "http")
-        return require("azure-iot-device-http").Http;
-    else
+    else if (protocol == "mqtt")
         return require("azure-iot-device-mqtt").Mqtt;
+    else if (protocol == "amqpws")
+        return require("azure-iot-device-amqp").AmqpWs;
+    else if (protocol == "amqp")
+        return require("azure-iot-device-amqp").Amqp;
+    else
+        return require("azure-iot-device-http").Http;
 
 }
 
@@ -304,7 +313,7 @@ async function startIoTHubSubscription(settingsJson, mainWindow) {
 
     //create iot hub device client
     printLogMessage("Trying to create client", "details");
-    _clientReceive = await connectToIoTHubWithSubscription(_settingsJson.connection.connectionPram1, Protocol);
+    _clientReceive = await connectToIoTHubWithSubscription(_settingsJson.connection.pram1, Protocol);
 
     //promise here
     await waitForStopSignal();
