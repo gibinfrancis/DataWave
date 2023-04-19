@@ -43,6 +43,7 @@ body {
 
 .footerC {
   grid-area: footerC;
+  background-color: #f3f3f3;
 }
 
 .footerR {

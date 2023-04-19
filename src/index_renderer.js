@@ -7,7 +7,6 @@ var settingsJson = {
   messagePropertiesTemplate: null,
   placeholders: [],
   connection: {},
-  protocol: "http", //mqtt/amqp/mqttws/amqpws/http - htt now and will add more in future
   delay: 10,
   batch: 1,
   count: 0,
@@ -49,6 +48,9 @@ $(function () {
 
   //hide unhide button click event
   $("#cntl_hide_btn").on("click", hideButtonClickHandler);
+
+  //updating connection setting on initial load
+  //updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
 });
 
 
@@ -283,13 +285,13 @@ async function startButtonClickHandler() {
 
   //invoke main service to start simulation
   if (settingsJson.direction == "send" && settingsJson.service == "iothub")
-    await window.api.startIoTHubSimulation(settingsJson);
+    await window.api.startIoTHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
-    await window.api.startIoTHubSubscription(settingsJson);
+    await window.api.startIoTHubReceive(settingsJson);
   else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
-    await window.api.startEventHubSimulation(settingsJson);
+    await window.api.startEventHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
-    await window.api.startEventHubSubscription(settingsJson);
+    await window.api.startEventHubReceive(settingsJson);
 
   //setting 0 will disable the continuous flow of progress bar
   $("#cntl_progress").attr("value", 0);
@@ -306,13 +308,13 @@ async function stopButtonClickHandler() {
 
   //invoke main service to start simulation
   if (settingsJson.direction == "send" && settingsJson.service == "iothub")
-    await window.api.stopIoTHubSimulation(settingsJson);
+    await window.api.stopIoTHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
-    await window.api.stopIoTHubSubscription(settingsJson);
+    await window.api.stopIoTHubReceive(settingsJson);
   else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
-    await window.api.stopEventHubSimulation(settingsJson);
+    await window.api.stopEventHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
-    await window.api.stopEventHubSubscription(settingsJson);
+    await window.api.stopEventHubReceive(settingsJson);
 
 }
 
@@ -391,7 +393,7 @@ function updateConSettingsGenParams(service, direction) {
   //get the placeholder index from the json
   objIndex = conSettingGenOptions.findIndex((obj) => obj.name == service && obj.direction == direction);
 
-  //check if both param2 is avaiable or not, param 1 will always be availablee, 
+  //check if both param2 is available or not, param 1 will always be available, 
   conSettingGenOptions[objIndex].param2 == null
     ? $("#con_string_lbl2").parent().hide()
     : $("#con_string_lbl2").parent().show();
@@ -408,11 +410,17 @@ function updateConSettingsGenParams(service, direction) {
     ? $("#con_string_lbl5").parent().hide()
     : $("#con_string_lbl5").parent().show();
 
-  $("#con_string_txt1").attr("placeholder", conSettingGenOptions[objIndex].param1);
-  $("#con_string_txt2").attr("placeholder", conSettingGenOptions[objIndex].param2);
-  $("#con_string_txt3").attr("placeholder", conSettingGenOptions[objIndex].param3);
-  $("#con_string_txt4").attr("placeholder", conSettingGenOptions[objIndex].param4);
-  $("#con_string_txt5").attr("placeholder", conSettingGenOptions[objIndex].param5);
+  $("#con_string_txt1").attr("placeholder", conSettingGenOptions[objIndex].param1Place);
+  $("#con_string_txt2").attr("placeholder", conSettingGenOptions[objIndex].param2Place);
+  $("#con_string_txt3").attr("placeholder", conSettingGenOptions[objIndex].param3Place);
+  $("#con_string_txt4").attr("placeholder", conSettingGenOptions[objIndex].param4Place);
+  $("#con_string_txt5").attr("placeholder", conSettingGenOptions[objIndex].param5Place);
+
+  $("#con_string_lbl1").val(conSettingGenOptions[objIndex].param1);
+  $("#con_string_lbl2").val(conSettingGenOptions[objIndex].param2);
+  $("#con_string_lbl3").val(conSettingGenOptions[objIndex].param3);
+  $("#con_string_lbl4").val(conSettingGenOptions[objIndex].param4);
+  $("#con_string_lbl5").val(conSettingGenOptions[objIndex].param5);
 
 }
 
@@ -468,7 +476,7 @@ function validateSettings(methodName) {
     return false;
   }
   else if ((methodName == "send" || methodName == "receive")
-    && settingsJson.connection.connectionPram1 == null) {
+    && settingsJson.connection.param1 == null) {
     printMessage("Please provide valid connection string", "error");
     return false;
   }
@@ -561,7 +569,10 @@ var conSettingGenOptions = [
   {
     name: "iothub",
     direction: "send",
-    param1: "Device connection string"
+    param1: "Device connection string",
+    param1Place: "Device connection string",
+    param2: "Device protocol",
+    param2Place: "mqtt/amqp/mqttws/amqpws/http",
   },
   {
     name: "eventhub",

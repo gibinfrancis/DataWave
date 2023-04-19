@@ -34,29 +34,29 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
 
-  //iot hub simulation start handle
-  ipcMain.handle("StartSimulation:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubSimulation(settingsJson, mainWindow));
+  //iot hub Send start handle
+  ipcMain.handle("StartSend:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubSend(settingsJson, mainWindow));
 
-  //iot hub simulation stop handle
-  ipcMain.handle("StopSimulation:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubSimulation(settingsJson, mainWindow));
+  //iot hub Send stop handle
+  ipcMain.handle("StopSend:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubSend(settingsJson, mainWindow));
 
-  //iot hub subscription start handle
-  ipcMain.handle("StartSubscription:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubSubscription(settingsJson, mainWindow));
+  //iot hub Receive start handle
+  ipcMain.handle("StartReceive:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubReceive(settingsJson, mainWindow));
 
-  //iot hub subscription stop handle
-  ipcMain.handle("StopSubscription:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubSubscription(settingsJson, mainWindow));
+  //iot hub Receive stop handle
+  ipcMain.handle("StopReceive:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubReceive(settingsJson, mainWindow));
 
-  //Event hub simulation start handle
-  ipcMain.handle("StartSimulation:EventHub", async (event, settingsJson) => eventHubService.startEventHubSimulation(settingsJson, mainWindow));
+  //Event hub Send start handle
+  ipcMain.handle("StartSend:EventHub", async (event, settingsJson) => eventHubService.startEventHubSend(settingsJson, mainWindow));
 
-  //Event hub simulation stop handle
-  ipcMain.handle("StopSimulation:EventHub", async (event, settingsJson) => eventHubService.stopEventHubSimulation(settingsJson, mainWindow));
+  //Event hub Send stop handle
+  ipcMain.handle("StopSend:EventHub", async (event, settingsJson) => eventHubService.stopEventHubSend(settingsJson, mainWindow));
 
-  //Event hub subscription start handle
-  ipcMain.handle("StartSubscription:EventHub", async (event, settingsJson) => eventHubService.startEventHubSubscription(settingsJson, mainWindow));
+  //Event hub Receive start handle
+  ipcMain.handle("StartReceive:EventHub", async (event, settingsJson) => eventHubService.startEventHubReceive(settingsJson, mainWindow));
 
-  //Event hub subscription stop handle
-  ipcMain.handle("StopSubscription:EventHub", async (event, settingsJson) => eventHubService.stopEventHubSubscription(settingsJson, mainWindow));
+  //Event hub Receive stop handle
+  ipcMain.handle("StopReceive:EventHub", async (event, settingsJson) => eventHubService.stopEventHubReceive(settingsJson, mainWindow));
 
 
   //generate a message

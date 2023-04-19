@@ -1,8 +1,8 @@
 const { v4: guidV4 } = require("uuid");
 var moment = require("moment");
 
-//get message and header prepared using its placeholder and template
-function getPreparedMessageAndHeader(settingsJson, iteration) {
+//generate message body, properties and header prepared using its placeholder and template
+function generateMessage(settingsJson, iteration) {
   // Create a message and send it to the IoT Hub every two seconds
   const genPlaceholders = generateTextForPlaceholders(settingsJson.placeholders, iteration);
 
@@ -12,19 +12,32 @@ function getPreparedMessageAndHeader(settingsJson, iteration) {
   //replace the header template with generated placeholder data
   const genHeader = replaceTemplateWithPlaceholder(settingsJson.messageHeaderTemplate, genPlaceholders);
 
-  let data = {};
-  data.message = genMessage;
+  //replace the properties template with generated placeholder data
+  const genProperties = replaceTemplateWithPlaceholder(settingsJson.messagePropertiesTemplate, genPlaceholders);
+
+  let message = {};
+  message.body = genMessage;
   try {
     //parsing header
     if (genHeader != null)
-      data.header = JSON.parse(genHeader);
+      message.header = JSON.parse(genHeader);
   }
   catch (ex) {
     //catch parse error
-    data.error = ex.message;
-    return data;
+    message.error = ex.message;
+    return message;
   }
-  return data;
+  try {
+    //parsing properties
+    if (genProperties != null)
+      message.properties = JSON.parse(genProperties);
+  }
+  catch (ex) {
+    //catch parse error
+    message.error = ex.message;
+    return message;
+  }
+  return message;
 }
 
 
@@ -209,6 +222,7 @@ function generateRandomNumber(min, max) {
   rand = rand + min;
   return rand;
 }
+
 //generate random double
 function generateRandomDouble(min, max) {
 
@@ -218,11 +232,10 @@ function generateRandomDouble(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-
 //delay function to wait for some time
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function delay(sec) {
+  return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
-exports.getPreparedMessageAndHeader = getPreparedMessageAndHeader;
+exports.generateMessage = generateMessage;
 exports.delay = delay;
