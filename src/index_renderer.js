@@ -49,6 +49,9 @@ $(function () {
   //hide unhide button click event
   $("#cntl_hide_btn").on("click", hideButtonClickHandler);
 
+  //relaunch button click event
+  $("#cntl_reset_btn").on("click", relaunchButtonClickHandler);
+
   //updating connection setting on initial load
   //updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
 });
@@ -83,6 +86,12 @@ async function hideButtonClickHandler() {
 }
 
 
+//-----------------------------------------------------
+//-----------------RELAUNCH BUTTON-----------
+//-----------------------------------------------------
+async function relaunchButtonClickHandler() {
+  await window.api.relaunch();
+}
 
 //-----------------------------------------------------
 //-----------------CLEAR LOG BUTTON-----------

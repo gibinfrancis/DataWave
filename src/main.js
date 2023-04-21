@@ -75,6 +75,9 @@ app.whenReady().then(() => {
   //generate a message
   ipcMain.handle("GenerateMessage", async (event, settingsJson) => commonService.getPreparedMessageAndHeader(settingsJson, 0));
 
+  //re launch
+  ipcMain.handle("Relaunch", async () => relaunchApp());
+
   createWindow();
 
   app.on("activate", () => {
@@ -90,3 +93,9 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+
+function relaunchApp() {
+  app.relaunch();
+  app.quit();
+}

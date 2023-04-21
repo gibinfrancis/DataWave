@@ -55,6 +55,9 @@ contextBridge.exposeInMainWorld("api", {
   //get generated message
   getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
 
+  //relaunch
+  relaunch: () => ipcRenderer.invoke("Relaunch"),
+
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on("LogUpdate", message, type),
 
