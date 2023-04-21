@@ -22,7 +22,8 @@ async function startIoTHubSend(settingsJson, mainWindow) {
     _settingsJson = settingsJson;
     _mainWindow = mainWindow;
 
-    console.log(_settingsJson);
+    //resetting counters and variables
+    resetCountersAndVariables();
 
     //get respective protocol
     printLogMessage("🚀 Starting simulation", "info");
@@ -36,9 +37,6 @@ async function startIoTHubSend(settingsJson, mainWindow) {
     //connect to iot hub device client
     printLogMessage("Trying to connect to client", "details");
     await connectToIoTHub(_clientSend);
-
-    //resetting counters and variables
-    resetCountersAndVariables();
 
     //continuous  trigger
     while (true) {
@@ -71,15 +69,8 @@ async function startIoTHubSend(settingsJson, mainWindow) {
             //log message 
             printLogMessage("📝 Message prepared", "info");
 
-            //print header
-            if (message?.properties?.propertyList != null)
-                printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-            //print properties
-            if (message?.properties != null)
-                printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
-            printLogMessage("Message body" + "\r\n" + message.getData(), "message");
+            //print message
+            printMessageContents(message);
 
             if (_settingsJson.bulkSend == true)
                 //adding messages to array
@@ -298,6 +289,7 @@ async function startIoTHubReceive(settingsJson, mainWindow) {
     //get respective protocol
     printLogMessage("↘️ Starting subscription", "info");
     const protocol = getProtocol(_settingsJson.connection.param2);
+    printLogMessage("Proceeding with protocol : " + protocol.name, "details");
 
     //create client
     printLogMessage("Trying to create client", "details");
@@ -335,16 +327,11 @@ function waitForStopSignal() {
 function receivedMessageHandler(message) {
     printLogMessage("📝 Message received", "info");
 
-    //print header
-    if (message?.properties?.propertyList != null)
-        printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-    //print properties
-    if (message?.properties != null)
-        printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
     //print message
-    printLogMessage("Message body" + "\r\n" + message.data, "message");
+    printMessageContents(message);
+
+    //update counters
+    updateCounters(true);
 
     _clientReceive.complete(message);
 }
@@ -355,6 +342,21 @@ async function stopIoTHubReceive(settingsJson, mainWindow) {
     _mainWindow = _mainWindow ?? mainWindow;
     _cancellationRequestReceive = true;
     printLogMessage("🚫 Subscription stop requested", "info");
+}
+
+//print message content
+function printMessageContents(message) {
+
+    //print header
+    if (message?.properties?.propertyList != null)
+        printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
+
+    //print properties
+    if (message?.properties != null)
+        printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
+
+    //print message
+    printLogMessage("Message body" + "\r\n" + message.data, "message");
 }
 
 //exporting functionalities

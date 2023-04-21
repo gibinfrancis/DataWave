@@ -72,32 +72,32 @@
         <div class="column">
 
           <div class="field">
-            <label class="label f12px" id="con_string_lbl1">Connection String</label>
+            <label class="label f12px" id="con_string_lbl1">Device connection String *</label>
             <div class="control">
               <input class="input" type="text" placeholder="Device connection string" id="con_string_txt1" />
             </div>
           </div>
 
           <div class="field">
-            <label class="label f12px" id="con_string_lbl2">Protocol</label>
+            <label class="label f12px" id="con_string_lbl2">Connection protocol</label>
             <div class="control">
               <input class="input" type="text" placeholder="mqtt/amqp/mqttws/amqpws/http" id="con_string_txt2" />
             </div>
           </div>
           <div class="field hidden">
-            <label class="label f12px" id="con_string_lbl3">Storage Connection String</label>
+            <label class="label f12px" id="con_string_lbl3">Storage connection string</label>
             <div class="control">
               <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt3" />
             </div>
           </div>
           <div class="field hidden">
-            <label class="label f12px" id="con_string_lbl4">Storage Connection String</label>
+            <label class="label f12px" id="con_string_lbl4">Storage connection string</label>
             <div class="control">
               <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt4" />
             </div>
           </div>
           <div class="field hidden">
-            <label class="label f12px" id="con_string_lbl5">Storage Connection String</label>
+            <label class="label f12px" id="con_string_lbl5">Storage connection string</label>
             <div class="control">
               <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt5" />
             </div>
@@ -124,8 +124,14 @@
           <input class="input" type="number" id="set_count_txt" placeholder="Count" value="0" />
         </div>
       </div>
-
-
+      <div class="columns mr-1 ml-1">
+        <div class="column">
+          <label class="checkbox">
+            <input type="checkbox" id="set_bulk_check">
+            Bulk Send
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- left pane bottom section -->

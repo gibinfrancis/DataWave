@@ -4,22 +4,25 @@ const { ContainerClient } = require("@azure/storage-blob");
 const { BlobCheckpointStore } = require("@azure/eventhubs-checkpointstore-blob");
 const commonService = require("./CommonService.js");
 
-var _clientSend;
-var _clientReceive;
-var _messageSubscription;
-var _msgBatch;
+let _clientSend;
+let _clientReceive;
 
-var _settingsJson;
-var _mainWindow;
+let _msgSubscription;
+let _msgBatch;
+
+let _settingsJson;
+let _mainWindow;
+
 let _totalCounter;
-let _msgGenCounter;
 let _totalSuccessCounter;
 let _totalFailureCounter;
-let _cancellationRequest = false;
-let _subscriptionCancellationRequest = false;
+let _msgGenCounter;
+
+let _cancellationRequestSend = false;
+let _cancellationRequestReceive = false;
 
 //start simulation based on the settings provided
-async function startEventHubSimulation(settingsJson, mainWindow) {
+async function startEventHubSend(settingsJson, mainWindow) {
 
   _settingsJson = settingsJson;
   _mainWindow = mainWindow;
@@ -31,9 +34,6 @@ async function startEventHubSimulation(settingsJson, mainWindow) {
   printLogMessage("Trying to create client", "details");
   _clientSend = await createEventHubClient(_settingsJson.connection.param1);
 
-  //crete event hub message batch
-  _msgBatch = await _clientSend.createBatch(); // createEventHubBatch(_clientSend);
-
   //resetting counters and cancellation
   resetCountersAndCancellation();
 
@@ -44,64 +44,69 @@ async function startEventHubSimulation(settingsJson, mainWindow) {
     let messages = [];
 
     for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
-
-      // Create a message and send it to the Event Hub every two seconds
-      const data = commonService.getPreparedMessageAndHeader(_settingsJson, _msgGenCounter);
+      // Create a message
+      const genMessage = commonService.generateMessage(_settingsJson, _msgGenCounter);
 
       //in case of message preparation error
-      if (data?.error) {
-        _cancellationRequest = true;
-        printLogMessage("❌ Error while parsing header : " + data.error, "info");
+      if (genMessage?.error) {
+        _cancellationRequestSend = true;
+        printLogMessage("❌ Error while preparing message : " + genMessage.error, "info");
         break;
       }
 
       //prepare message
-      const message = { body: data.message };
+      const message = { body: genMessage.body };
+
+      //set header
+      setPropertiesToObject(message.properties, genMessage.header);
 
       //set properties
-      // if (data.header != null)
-      //   setHeaderPropertiesToMessage(message, data.header);
+      setPropertiesToObject(message, genMessage.properties);
 
       //log message 
       printLogMessage("📝 Message prepared", "info");
-      // if (message?.properties?.propertyList != null)
-      //   printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-      printLogMessage("Message body" + "\r\n" + message.body, "message");
+
+      //print message contents
+      printMessageContents(message);
 
       if (_settingsJson.bulkSend == true)
         //adding messages to array
         messages.push(message);
       else {
+        //crete event hub message batch
+        _msgBatch = await _clientSend.createBatch();
         //send event 
         await sendMessage(_clientSend, _msgBatch, message);
+        _msgBatch
       }
 
       //check if total count reached, if its a fixed count simulation
       if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
-        || _cancellationRequest == true) {
+        || _cancellationRequestSend == true) {
         break;
       }
     }
 
-
     //send message batch if messages are available
     if (_settingsJson.bulkSend == true && messages.length > 0) {
+      //crete event hub message batch
+      _msgBatch = await _clientSend.createBatch();
       //send message as batch
       await sendBatchMessages(_clientSend, _msgBatch, messages);
     }
     //check if total count reached, if its a fixed count simulation
     if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
-      || _cancellationRequest == true) {
+      || _cancellationRequestSend == true) {
       break;
     }
 
     //delay for sometime
     printLogMessage("🕒 Waiting for delay", "info");
-    await commonService.delay(_settingsJson.delay * 1000);
+    await commonService.delay(_settingsJson.delay);
     printLogMessage("Delay completed", "details");
 
     //check if cancellation requested during the delay time
-    if (_cancellationRequest == true) {
+    if (_cancellationRequestSend == true) {
       break;
     }
   }
@@ -113,82 +118,94 @@ async function startEventHubSimulation(settingsJson, mainWindow) {
 }
 
 //stop Event hub simulation
-async function stopEventHubSimulation(settingsJson, mainWindow) {
+async function stopEventHubSend(settingsJson, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
-  _cancellationRequest = true;
+  _cancellationRequestSend = true;
   printLogMessage("🚫 Simulation stop requested", "info");
 }
 
+//print message content
+function printMessageContents(message) {
+  //print header
+  if (message?.properties?.propertyList != null)
+    printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
+
+  //print properties
+  if (message?.properties != null)
+    printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
+
+  //print message
+  printLogMessage("Message body" + "\r\n" + message.body, "message");
+}
 
 //Connect to Event Hub using the device connection string and protocol
-function createEventHubClient(eventhubConString) {
+function createEventHubClient(eventHubConString) {
   return new Promise((resolve, reject) => {
     //create client
-    let client = new EventHubProducerClient(eventhubConString);
+    let client = new EventHubProducerClient(eventHubConString);
     resolve(client);
   })
 }
 
 
-//Connect to Event Hub using the device connection string and protocol
-function createEventHubBatch(client) {
-  return new Promise((resolve, reject) => {
-    //creates batch
-    client.createBatch(err => {
-      if (err) {
-        printLogMessage("🔴 Client connection failed", "info");
-        printLogMessage(err, "details");
-        reject(err);
-      }
-      else {
-        printLogMessage("🟢 Client connected", "info");
-        resolve(batch);
-      }
-    });
-  })
-}
-
-
-
 
 //Connect to Event Hub using the device connection string and protocol
-function connectToEventHubWithSubscription(settingsJson) {
+async function connectToEventHubToReceive(settingsJson) {
 
-  // Create a blob container client and a blob checkpoint store using the client.
-  const containerClient = new ContainerClient(
-    settingsJson.connection.param4,
-    settingsJson.connection.param5,
-  );
-  const checkpointStore = new BlobCheckpointStore(containerClient);
+  // //Create a blob container client and a blob checkpoint store using the client.
+  // const containerClient = new ContainerClient(
+  //   settingsJson.connection.param3,
+  //   settingsJson.connection.param4,
+  // );
+
+  // if (!(await containerClient.exists())) {
+  //   await containerClient.create(); // This can be skipped if the container already exists
+  //   printLogMessage("created container", "info");
+  // }
+
+  // const checkpointStore = new BlobCheckpointStore(containerClient);
 
   //create client
-  let client = new EventHubConsumerClient(settingsJson.connection.param3,
-    settingsJson.connection.param1,
-    settingsJson.connection.param2, checkpointStore);;
-
+  let nameSpaceConnection = settingsJson.connection.param1.split(";EntityPath=")[0];
+  let eventHubName = settingsJson.connection.param1.split(";EntityPath=")[1];
+  let client = new EventHubConsumerClient(settingsJson.connection.param2,
+    settingsJson.connection.param1);
+  //const partitionIds = await client.getPartitionIds();
   //receive event
-  _messageSubscription = client.subscribe(
+  //_msgSubscription = client.subscribe(new SubscriptionHandlers());
+  _msgSubscription = client.subscribe(
+    //partitionIds[0],
     {
-      processEvents: async (events, context) => receivedMessageHandler(events, context),
+      processEvents: async (events, context) => {
+
+
+        if (events?.length == 0) {
+          return;
+        }
+
+        for (const event of events) {
+          printLogMessage("📝 Message received", "info");
+          printMessageContents(event);
+          //update counters
+          updateCounters(true);
+          await context.updateCheckpoint(event);
+          //let res = await updateMessageCounters(event, context);
+          printLogMessage("check point update", "info");
+
+        }
+
+
+      },
       processError: async (err, context) => {
         printLogMessage("🔴 Client connection failed", "info");
         printLogMessage(err, "details");
       },
     },
     { startPosition: earliestEventPosition }
+
   );
 
-  // //opens connection
-  // client.open(err => {
-  //   if (err) {
-  //     printLogMessage("🔴 Client connection failed", "info");
-  //     printLogMessage(err, "details");
-  //     reject(err);
-  //   }
-  //   else {
-  //     printLogMessage("🟢 Client connected", "info");
-  //     resolve(client);
-  //   }
+  return client;
 
 }
 
@@ -214,6 +231,20 @@ async function sendMessage(client, batch, message) {
 }
 
 
+
+//send message to Event Hub
+async function updateMessageCounters(event, context) {
+  return new Promise((resolve, reject) => {
+    context.updateCheckpoint(event, event.sequenceNumber).then((res) => {
+      printLogMessage("Telemetry checkpoint update", "info");
+      resolve(true);
+    }).catch((err) => {
+      printLogMessage("❌ Error while sending message", "info");
+      printLogMessage("Error : " + err.toString(), "details");
+      reject(false);
+    });
+  });
+}
 
 
 
@@ -241,18 +272,18 @@ function sendBatchMessages(client, batch, messages) {
   });
 }
 
-//function to set header properties to the message
-function setHeaderPropertiesToMessage(message, header) {
+//function to set properties to the respective object
+function setPropertiesToObject(destObject, properties) {
 
   //validate
-  if (message == null && header == null)
+  if (destObject == null || properties == null)
     return;
-  //get akk keys in header object
-  var keys = Object.keys(header);
+  //get all keys in properties object
+  var keys = Object.keys(properties);
   //lopping through the keys
   for (var i = 0; i < keys.length; i++) {
     //adding message properties 
-    message.properties.add(keys[i], header[keys[i]]);
+    destObject.add(keys[i], properties[keys[i]]);
   }
 
 }
@@ -263,7 +294,8 @@ function resetCountersAndCancellation() {
   _totalSuccessCounter = 0;
   _totalFailureCounter = 0;
   _msgGenCounter = 0;
-  _cancellationRequest = false;
+  _cancellationRequestSend = false;
+  _cancellationRequestReceive = false;
 }
 
 //update counters
@@ -288,18 +320,13 @@ function updateCounters(success, count = 1) {
 //Close connection to Event Hub
 function closeToEventHubClient(client) {
   return new Promise((resolve, reject) => {
-    //close the connection
-    client.close(err => {
-      if (err) {
-        printLogMessage("🔴 Error while closing connection", "info");
-        printLogMessage(err, "details")
-        reject(err);
-      }
-      else {
-        printLogMessage("🔴 Connection closed successfully", "info");
-        resolve(true);
-      }
-
+    client.close().then((res) => {
+      printLogMessage("🔴 Connection closed successfully", "info");
+      resolve(true);
+    }).catch((err) => {
+      printLogMessage("🔴 Error while closing connection", "info");
+      printLogMessage(err, "details")
+      reject(err);
     });
   })
 }
@@ -315,20 +342,22 @@ function printLogMessage(message, type) {
 
 
 //start subscription based on the settings provided
-async function startEventHubSubscription(settingsJson, mainWindow) {
+async function startEventHubReceive(settingsJson, mainWindow) {
 
   _settingsJson = settingsJson;
   _mainWindow = mainWindow;
-  _subscriptionCancellationRequest = false;
+
+  //resetting counters
+  resetCountersAndCancellation();
 
   //get respective protocol
   printLogMessage("↘️ Starting subscription", "info");
 
   //create Event hub device client
   printLogMessage("Trying to create client", "details");
-  _clientReceive = connectToEventHubWithSubscription(_settingsJson);
+  _clientReceive = await connectToEventHubToReceive(_settingsJson);
 
-  //promise here
+  //waiting for stop signal
   await waitForStopSignal();
 
   //close client connection
@@ -341,7 +370,7 @@ async function startEventHubSubscription(settingsJson, mainWindow) {
 function waitForStopSignal() {
   return new Promise((resolve) => {
     const intervalId = setInterval(() => {
-      if (_subscriptionCancellationRequest) {
+      if (_cancellationRequestReceive) {
         clearInterval(intervalId);
         resolve();
       }
@@ -358,178 +387,29 @@ async function receivedMessageHandler(events, context) {
 
   for (const event of events) {
     printLogMessage("📝 Message received", "info");
-    printLogMessage("Message body" + "\r\n" + event.body, "message");
-    console.log(event);
+    printMessageContents(event);
+    //update counters
+    updateCounters(true);
+
   }
+
   // Update the checkpoint.
-  await context.updateCheckpoint(events[events.length - 1]);
+  //await context.updateCheckpoint(events[events.length - 1]);
 }
 
 //stop Event hub subscription
-async function stopEventHubSubscription(settingsJson, mainWindow) {
+async function stopEventHubReceive(settingsJson, mainWindow) {
 
   _mainWindow = _mainWindow ?? mainWindow;
-  _messageSubscription.close();
-  _subscriptionCancellationRequest = true;
+  _msgSubscription.close();
+  _cancellationRequestReceive = true;
   printLogMessage("🚫 Subscription stop requested", "info");
 }
 
+
+
 //exporting functionalities
-exports.startEventHubSimulation = startEventHubSimulation;
-exports.stopEventHubSimulation = stopEventHubSimulation;
-exports.startEventHubSubscription = startEventHubSubscription;
-exports.stopEventHubSubscription = stopEventHubSubscription;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const connectionString = "EVENT HUBS NAMESPACE CONNECTION STRING";
-// const eventHubName = "EVENT HUB NAME";
-
-// async function main() {
-//   // Create a producer client to send messages to the event hub.
-//   const producer = new EventHubProducerClient(connectionString, eventHubName);
-
-//   // Prepare a batch of three events.
-//   producer.
-//   const batch = await producer.createBatch();
-//   batch.tryAdd({ body: "First event" });
-//   batch.tryAdd({ body: "Second event" });
-//   batch.tryAdd({ body: "Third event" });
-
-//   // Send the batch to the event hub.
-//   await producer.sendBatch(batch);
-
-//   // Close the producer client.
-//   await producer.close();
-
-//   console.log("A batch of three events have been sent to the event hub");
-// }
-
-// main().catch((err) => {
-//   console.log("Error occurred: ", err);
-// });
-
-// const {
-//   EventHubConsumerClient,
-//   earliestEventPosition,
-// } = require("@azure/event-hubs");
-// const { ContainerClient } = require("@azure/storage-blob");
-// const {
-//   BlobCheckpointStore,
-// } = require("@azure/eventhubs-checkpointstore-blob");
-
-// const connectionString = "EVENT HUBS NAMESPACE CONNECTION STRING";
-// const eventHubName = "EVENT HUB NAME";
-// const consumerGroup = "$Default"; // name of the default consumer group
-// const storageConnectionString = "STORAGE CONNECTION STRING";
-// const containerName = "STORAGE CONTAINER NAME";
-
-// async function main() {
-//   // Create a blob container client and a blob checkpoint store using the client.
-//   const containerClient = new ContainerClient(
-//     storageConnectionString,
-//     containerName
-//   );
-//   const checkpointStore = new BlobCheckpointStore(containerClient);
-
-//   // Create a consumer client for the event hub by specifying the checkpoint store.
-//   const consumerClient = new EventHubConsumerClient(
-//     consumerGroup,
-//     connectionString,
-//     eventHubName,
-//     checkpointStore
-//   );
-
-//   // Subscribe to the events, and specify handlers for processing the events and errors.
-//   const subscription = consumerClient.subscribe(
-//     {
-//       processEvents: async (events, context) => {
-//         if (events.length === 0) {
-//           console.log(
-//             `No events received within wait time. Waiting for next interval`
-//           );
-//           return;
-//         }
-
-//         for (const event of events) {
-//           console.log(
-//             `Received event: "${event.body}" from partition: "${context.partitionId}" and consumer group: "${context.consumerGroup}"`
-//           );
-//         }
-//         // Update the checkpoint.
-//         await context.updateCheckpoint(events[events.length - 1]);
-//       },
-
-//       processError: async (err, context) => {
-//         console.log(`Error : ${err}`);
-//       },
-//     },
-//     { startPosition: earliestEventPosition }
-//   );
-
-//   // After 30 seconds, stop processing.
-//   await new Promise((resolve) => {
-//     setTimeout(async () => {
-//       await subscription.close();
-//       await consumerClient.close();
-//       resolve();
-//     }, 30000);
-//   });
-// }
-
-// main().catch((err) => {
-//   console.log("Error occurred: ", err);
-// });
+exports.startEventHubSend = startEventHubSend;
+exports.stopEventHubSend = stopEventHubSend;
+exports.startEventHubReceive = startEventHubReceive;
+exports.stopEventHubReceive = stopEventHubReceive;

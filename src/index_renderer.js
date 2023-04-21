@@ -416,11 +416,11 @@ function updateConSettingsGenParams(service, direction) {
   $("#con_string_txt4").attr("placeholder", conSettingGenOptions[objIndex].param4Place);
   $("#con_string_txt5").attr("placeholder", conSettingGenOptions[objIndex].param5Place);
 
-  $("#con_string_lbl1").val(conSettingGenOptions[objIndex].param1);
-  $("#con_string_lbl2").val(conSettingGenOptions[objIndex].param2);
-  $("#con_string_lbl3").val(conSettingGenOptions[objIndex].param3);
-  $("#con_string_lbl4").val(conSettingGenOptions[objIndex].param4);
-  $("#con_string_lbl5").val(conSettingGenOptions[objIndex].param5);
+  $("#con_string_lbl1").text(conSettingGenOptions[objIndex].param1);
+  $("#con_string_lbl2").text(conSettingGenOptions[objIndex].param2);
+  $("#con_string_lbl3").text(conSettingGenOptions[objIndex].param3);
+  $("#con_string_lbl4").text(conSettingGenOptions[objIndex].param4);
+  $("#con_string_lbl5").text(conSettingGenOptions[objIndex].param5);
 
 }
 
@@ -569,15 +569,15 @@ var conSettingGenOptions = [
   {
     name: "iothub",
     direction: "send",
-    param1: "Device connection string",
+    param1: "Device connection string *",
     param1Place: "Device connection string",
-    param2: "Device protocol",
+    param2: "Connection protocol",
     param2Place: "mqtt/amqp/mqttws/amqpws/http",
   },
   {
     name: "eventhub",
     direction: "send",
-    param1: "Event hub connection string"
+    param1: "Event hub connection string *"
   },
   {
     name: "servicebus",
@@ -593,16 +593,18 @@ var conSettingGenOptions = [
   {
     name: "iothub",
     direction: "receive",
-    param1: "Device connection string"
+    param1: "Device connection string *",
+    param1Place: "Device connection string",
+    param2: "Connection protocol",
+    param2Place: "mqtt/amqp/mqttws/amqpws/http",
   },
   {
     name: "eventhub",
     direction: "receive",
-    param1: "Event hub namespace connection string",
-    param2: "Event hub name",
-    param3: "Consumer group name",
-    param4: "Storage account connection string",
-    param5: "Storage account container name"
+    param1: "Event hub connection string *",
+    param2: "Consumer group name",
+    param3: "Storage account connection string",
+    param4: "Storage account container name"
   },
   {
     name: "servicebus",
