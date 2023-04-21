@@ -40,6 +40,18 @@ contextBridge.exposeInMainWorld("api", {
   //stop Event hub Receive
   stopEventHubReceive: (settingsJson) => ipcRenderer.invoke("StopReceive:EventHub", settingsJson),
 
+  //start Service Bus Send
+  startServiceBusSend: (settingsJson) => ipcRenderer.invoke("StartSend:ServiceBus", settingsJson),
+
+  //stop Service Bus Send
+  stopServiceBusSend: (settingsJson) => ipcRenderer.invoke("StopSend:ServiceBus", settingsJson),
+
+  //start Service Bus Receive
+  startServiceBusReceive: (settingsJson) => ipcRenderer.invoke("StartReceive:ServiceBus", settingsJson),
+
+  //stop Service Bus Receive
+  stopServiceBusReceive: (settingsJson) => ipcRenderer.invoke("StopReceive:ServiceBus", settingsJson),
+
   //get generated message
   getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
 

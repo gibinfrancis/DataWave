@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
 const ioTHubService = require("./services/IoTHubService.js");
 const eventHubService = require("./services/EventHubService.js");
+const serviceBusService = require("./services/ServiceBusService.js");
 const commonService = require("./services/CommonService.js");
 const path = require("path");
 var mainWindow;
@@ -57,6 +58,18 @@ app.whenReady().then(() => {
 
   //Event hub Receive stop handle
   ipcMain.handle("StopReceive:EventHub", async (event, settingsJson) => eventHubService.stopEventHubReceive(settingsJson, mainWindow));
+
+  //Service bus Send start handle
+  ipcMain.handle("StartSend:ServiceBus", async (event, settingsJson) => serviceBusService.startServiceBusSend(settingsJson, mainWindow));
+
+  //Service bus Send stop handle
+  ipcMain.handle("StopSend:ServiceBus", async (event, settingsJson) => serviceBusService.stopServiceBusSend(settingsJson, mainWindow));
+
+  //Service bus Receive start handle
+  ipcMain.handle("StartReceive:ServiceBus", async (event, settingsJson) => serviceBusService.startServiceBusReceive(settingsJson, mainWindow));
+
+  //Service bus Receive stop handle
+  ipcMain.handle("StopReceive:ServiceBus", async (event, settingsJson) => serviceBusService.stopServiceBusReceive(settingsJson, mainWindow));
 
 
   //generate a message

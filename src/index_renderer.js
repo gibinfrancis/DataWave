@@ -292,6 +292,10 @@ async function startButtonClickHandler() {
     await window.api.startEventHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
     await window.api.startEventHubReceive(settingsJson);
+  else if (settingsJson.direction == "send" && settingsJson.service == "servicebus")
+    await window.api.startServiceBusSend(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "servicebus")
+    await window.api.startServiceBusReceive(settingsJson);
 
   //setting 0 will disable the continuous flow of progress bar
   $("#cntl_progress").attr("value", 0);
@@ -315,6 +319,10 @@ async function stopButtonClickHandler() {
     await window.api.stopEventHubSend(settingsJson);
   else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
     await window.api.stopEventHubReceive(settingsJson);
+  else if (settingsJson.direction == "send" && settingsJson.service == "servicebus")
+    await window.api.stopServiceBusSend(settingsJson);
+  else if (settingsJson.direction == "receive" && settingsJson.service == "servicebus")
+    await window.api.stopServiceBusReceive(settingsJson);
 
 }
 
@@ -577,13 +585,16 @@ var conSettingGenOptions = [
   {
     name: "eventhub",
     direction: "send",
-    param1: "Event hub connection string *"
+    param1: "Event hub connection string *",
+    param1Place: "Event hub connection string",
   },
   {
     name: "servicebus",
     direction: "send",
-    param1: "Service bus connection string",
-    param2: "Topic name"
+    param1: "Service bus connection string *",
+    param1Place: "Service bus connection string",
+    param2: "Topic/Queue name *",
+    param2Place: "Service bus topic/queue name",
   },
   {
     name: "mqtt",
@@ -602,15 +613,23 @@ var conSettingGenOptions = [
     name: "eventhub",
     direction: "receive",
     param1: "Event hub connection string *",
+    param1Place: "Event hub connection string",
     param2: "Consumer group name",
+    param2Place: "Consumer group name",
     param3: "Storage account connection string",
-    param4: "Storage account container name"
+    param3Place: "Storage account connection string",
+    param4: "Storage account container name",
+    param4Place: "Storage account container name"
   },
   {
     name: "servicebus",
     direction: "receive",
-    param1: "Service bus connection string",
-    param2: "Topic name"
+    param1: "Service bus connection string *",
+    param1Place: "Service bus connection string",
+    param2: "Topic/Queue name *",
+    param2Place: "Service bus topic/queue name",
+    param3: "Topic Subscription name",
+    param3Place: "Service bus topic subscription name",
   },
   {
     name: "mqtt",

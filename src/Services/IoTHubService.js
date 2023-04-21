@@ -111,7 +111,7 @@ async function startIoTHubSend(settingsJson, mainWindow) {
     }
 
     //close client connection
-    await closeToIoTHubClient(_clientSend);
+    await closeIoTHubClient(_clientSend);
     printLogMessage("✅ Simulation completed", "info");
 
 }
@@ -234,7 +234,7 @@ function updateCounters(success, count = 1) {
 }
 
 //Close connection to IoT Hub
-function closeToIoTHubClient(client) {
+function closeIoTHubClient(client) {
     return new Promise((resolve, reject) => {
         //close the connection
         client.close(err => {
@@ -306,7 +306,7 @@ async function startIoTHubReceive(settingsJson, mainWindow) {
     await waitForStopSignal();
 
     //close client connection
-    await closeToIoTHubClient(_clientReceive);
+    await closeIoTHubClient(_clientReceive);
     printLogMessage("✅ Subscription completed", "info");
 
 }
