@@ -106,11 +106,12 @@ async function fileLoadButtonClickHandler() {
 
   //invoke file load service
   let fileContentStr = await window.api.LoadSimulationFile();
-  console.log(fileContentStr);
   try {
     settingsJson = JSON.parse(fileContentStr);
-    console.log(settingsJson);
-    printMessage("File loaded successfully", "success");
+
+    updateSettingsToUi();
+
+    printMessage("File loaded successfully", "info");
   }
   catch (err) {
     printMessage("unable to load the file due to parsing error", "error");
@@ -118,6 +119,38 @@ async function fileLoadButtonClickHandler() {
 
 }
 
+
+function updateSettingsToUi() {
+
+  //direction
+  $("#" + settingsJson.direction + "-option").prop("checked", true);
+
+  //service
+  $("#" + settingsJson.service + "-option").prop("checked", true);
+
+  //updating ui based on the service and direction
+  updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
+
+  //connection parameters
+  $("#con_string_txt1").val(settingsJson.connection.param1);
+  $("#con_string_txt2").val(settingsJson.connection.param2);
+  $("#con_string_txt3").val(settingsJson.connection.param3);
+  $("#con_string_txt4").val(settingsJson.connection.param4);
+  $("#con_string_txt5").val(settingsJson.connection.param5);
+
+  //simulation settings
+  $("#set_batch_txt").val(settingsJson.batch);
+  $("#set_delay_txt").val(settingsJson.delay);
+  $("#set_count_txt").val(settingsJson.count);
+  $("#set_bulk_check").prop("checked", settingsJson.bulkSend);
+
+
+  //message temapltes
+  $("#msg_body_txt").val(settingsJson.messageBodyTemplate);
+  $("#msg_header_txt").val(settingsJson.messageHeaderTemplate);
+  $("#msg_prop_txt").val(settingsJson.messagePropertiesTemplate);
+
+}
 
 //-----------------------------------------------------
 //-----------------FILE SAVE BUTTON--------------------
@@ -132,7 +165,7 @@ async function fileSaveButtonClickHandler() {
 
   //show message based on result
   if (res) {
-    printMessage("File saved successfully", "success");
+    printMessage("File saved successfully", "info");
   }
   else {
     printMessage("unable to save the file", "error");
@@ -411,11 +444,12 @@ function printLogMessage(logMessage, type) {
 //print message
 function printMessage(message, type) {
 
+  $("#log_msg_lbl").parent().removeClass("is-danger is-link");
   if (type == "error") {
-    $("#log_msg_lbl").addClass("has-text-danger-dark");
+    $("#log_msg_lbl").parent().addClass("is-danger");
   }
   else if (type == "info") {
-    //$("#log_msg_lbl").addClass("has-text-info-dark");
+    $("#log_msg_lbl").parent().addClass("is-link");
   }
   else if (type == "clear") {
     //$("#log_msg_lbl").text("");
