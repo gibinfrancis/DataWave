@@ -137,7 +137,7 @@ function printMessageContents(message) {
     printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
 
   //print message
-  printLogMessage("Message body" + "\r\n" + message.body, "message");
+  printLogMessage("Message body" + "\r\n" + JSON.stringify(message.body, null, 2), "message");
 }
 
 //Connect to Event Hub using the device connection string and protocol

@@ -58,6 +58,12 @@ contextBridge.exposeInMainWorld("api", {
   //relaunch
   relaunch: () => ipcRenderer.invoke("Relaunch"),
 
+  //Save Simulation File
+  SaveSimulationFile: (settingsJson) => ipcRenderer.invoke("SaveSimulationFile", settingsJson),
+
+  //Load Simulation File
+  LoadSimulationFile: () => ipcRenderer.invoke("LoadSimulationFile"),
+
   //update log
   onLogUpdate: (message, type) => ipcRenderer.on("LogUpdate", message, type),
 

@@ -52,6 +52,12 @@ $(function () {
   //relaunch button click event
   $("#cntl_reset_btn").on("click", relaunchButtonClickHandler);
 
+  //file load button
+  $("#cntl_load_btn").on("click", fileLoadButtonClickHandler);
+
+  //file save button
+  $("#cntl_save_btn").on("click", fileSaveButtonClickHandler);
+
   //updating connection setting on initial load
   //updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
 });
@@ -92,6 +98,47 @@ async function hideButtonClickHandler() {
 async function relaunchButtonClickHandler() {
   await window.api.relaunch();
 }
+
+//-----------------------------------------------------
+//-----------------FILE LOAD BUTTON-----------
+//-----------------------------------------------------
+async function fileLoadButtonClickHandler() {
+
+  //invoke file load service
+  let fileContentStr = await window.api.LoadSimulationFile();
+  console.log(fileContentStr);
+  try {
+    settingsJson = JSON.parse(fileContentStr);
+    console.log(settingsJson);
+    printMessage("File loaded successfully", "success");
+  }
+  catch (err) {
+    printMessage("unable to load the file due to parsing error", "error");
+  }
+
+}
+
+
+//-----------------------------------------------------
+//-----------------FILE SAVE BUTTON--------------------
+//-----------------------------------------------------
+async function fileSaveButtonClickHandler() {
+
+  //prepare settings object
+  prepareSettings();
+
+  //invoke file save service
+  let res = await window.api.SaveSimulationFile(settingsJson);
+
+  //show message based on result
+  if (res) {
+    printMessage("File saved successfully", "success");
+  }
+  else {
+    printMessage("unable to save the file", "error");
+  }
+}
+
 
 //-----------------------------------------------------
 //-----------------CLEAR LOG BUTTON-----------
@@ -365,7 +412,7 @@ function printLogMessage(logMessage, type) {
 function printMessage(message, type) {
 
   if (type == "error") {
-    //$("#log_msg_lbl").addClass("has-text-danger-dark");
+    $("#log_msg_lbl").addClass("has-text-danger-dark");
   }
   else if (type == "info") {
     //$("#log_msg_lbl").addClass("has-text-info-dark");

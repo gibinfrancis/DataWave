@@ -1,9 +1,11 @@
-const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
+const { app, BrowserWindow, ipcMain, ipcRenderer, dialog } = require("electron");
 const ioTHubService = require("./services/IoTHubService.js");
 const eventHubService = require("./services/EventHubService.js");
 const serviceBusService = require("./services/ServiceBusService.js");
 const commonService = require("./services/CommonService.js");
 const path = require("path");
+const os = require("os");
+const fs = require("fs");
 var mainWindow;
 
 // Create the browser window.
@@ -78,6 +80,12 @@ app.whenReady().then(() => {
   //re launch
   ipcMain.handle("Relaunch", async () => relaunchApp());
 
+  //save simulation json file
+  ipcMain.handle("SaveSimulationFile", async (event, settingsJson) => saveSimulationFile(settingsJson));
+
+  //load simulation json file
+  ipcMain.handle("LoadSimulationFile", async () => loadSimulationFile());
+
   createWindow();
 
   app.on("activate", () => {
@@ -94,8 +102,65 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-
+//relaunch the application
 function relaunchApp() {
   app.relaunch();
   app.quit();
+}
+
+//function to save the settings json file
+async function saveSimulationFile(settingsJson) {
+
+  //show file save dialog
+  dialog.showSaveDialog(mainWindow, {
+    properties: ['openFile', 'openDirectory'],
+    title: 'Select the file path to save',
+    defaultPath: path.join(os.homedir(), "Desktop/simulation.json"),
+    filters: [
+      {
+        name: 'JSON Files',
+        extensions: ['json']
+      },],
+  }).then(result => {
+    if (!result.canceled) {
+      console.log(result.filePath.toString());
+      fs.writeFileSync(result.filePath.toString(), JSON.stringify(settingsJson), function (err) {
+        if (err) {
+          console.log('Error while saving file' + err);
+        }
+        else {
+          console.log('File saved');
+          return true;
+        }
+
+      });
+    }
+    return false;
+  }).catch(err => {
+    console.log(err)
+    return false;
+  })
+}
+
+//function to load the settings json file
+async function loadSimulationFile() {
+  dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+  }).then(result => {
+    console.log(result);
+    if (!result.canceled) {
+      fs.readFileSync(result.filePaths[0].toString(), function (err, data) {
+        if (err) {
+          console.log('Error while saving file' + err);
+        }
+        else {
+          console.log('File loaded' + data);
+          return data;
+        }
+      });
+    }
+
+  }).catch(err => {
+    console.log(err)
+  })
 }
