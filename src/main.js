@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, ipcRenderer, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const ioTHubService = require("./services/IoTHubService.js");
 const eventHubService = require("./services/EventHubService.js");
 const serviceBusService = require("./services/ServiceBusService.js");
@@ -112,7 +112,7 @@ function relaunchApp() {
 async function saveSimulationFile(settingsJson) {
 
   //show file save dialog
-  dialog.showSaveDialog(mainWindow, {
+  let result = await dialog.showSaveDialog(mainWindow, {
     properties: ['openFile', 'openDirectory'],
     title: 'Select the file path to save',
     defaultPath: path.join(os.homedir(), "Desktop/simulation.json"),
@@ -121,46 +121,60 @@ async function saveSimulationFile(settingsJson) {
         name: 'JSON Files',
         extensions: ['json']
       },],
-  }).then(result => {
-    if (!result.canceled) {
-      console.log(result.filePath.toString());
-      fs.writeFileSync(result.filePath.toString(), JSON.stringify(settingsJson), function (err) {
-        if (err) {
-          console.log('Error while saving file' + err);
-        }
-        else {
-          console.log('File saved');
-          return true;
-        }
+  });
 
-      });
-    }
-    return false;
-  }).catch(err => {
-    console.log(err)
-    return false;
-  })
+  if (!result.canceled) {
+    console.log(result.filePath.toString());
+    let res = await writeToFile(result.filePath.toString(), JSON.stringify(settingsJson));
+    return res;
+  }
 }
 
 //function to load the settings json file
 async function loadSimulationFile() {
-  dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile']
-  }).then(result => {
-    console.log(result);
-    if (!result.canceled) {
-      fs.readFileSync(result.filePaths[0].toString(), function (err, data) {
-        if (err) {
-          console.log('Error while saving file' + err);
-        }
-        else {
-          console.log('File loaded' + data);
-          return data;
-        }
-      });
-    }
 
-  }).catch(err => {
-    console.log(err)
+  let result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+  });
+
+  if (!result.canceled) {
+    let res = await readFromFile(result.filePaths[0].toString());
+    return res;
+  }
+  return null;
+}
+
+
+
+//write content to file
+function writeToFile(filePath, content) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(filePath, content, function (err) {
+      if (err) {
+        console.log('Error while saving file' + err);
+        resolve(false);
+      }
+      else {
+        console.log('File saved');
+        resolve(true);
+      }
+    });
+  })
+}
+
+
+//read content from file
+function readFromFile(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, "utf8", function (err, data) {
+      if (err) {
+        console.log('Error while reading file' + err);
+        resolve(null);
+      }
+      else {
+        console.log('File loaded');
+        resolve(data);
+      }
+    });
   })
 }
