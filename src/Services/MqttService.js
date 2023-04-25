@@ -184,7 +184,7 @@ function createMqttReceiver(client, topicName, subscriptionName) {
 //Connect to mqtt and subscribe messages
 async function subscribeMqttMessages(client, topicName) {
   //receive event
-  client.on('message', function (topic, message) {
+  client.on("message", function (topic, message) {
     printLogMessage("📝 Message received", "info");
     printMessageContents(message);
     //update counters

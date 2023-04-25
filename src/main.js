@@ -113,13 +113,13 @@ async function saveSimulationFile(settingsJson) {
 
   //show file save dialog
   let result = await dialog.showSaveDialog(mainWindow, {
-    properties: ['openFile', 'openDirectory'],
-    title: 'Select the file path to save',
+    properties: ["openFile", "openDirectory"],
+    title: "Select the file path to save",
     defaultPath: path.join(os.homedir(), "Desktop/simulation.json"),
     filters: [
       {
-        name: 'JSON Files',
-        extensions: ['json']
+        name: "JSON Files",
+        extensions: ["json"]
       },],
   });
 
@@ -134,7 +134,7 @@ async function saveSimulationFile(settingsJson) {
 async function loadSimulationFile() {
 
   let result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile']
+    properties: ["openFile"]
   });
 
   if (!result.canceled) {
@@ -151,11 +151,11 @@ function writeToFile(filePath, content) {
   return new Promise((resolve, reject) => {
     fs.writeFile(filePath, content, function (err) {
       if (err) {
-        console.log('Error while saving file' + err);
+        console.log("Error while saving file" + err);
         resolve(false);
       }
       else {
-        console.log('File saved');
+        console.log("File saved");
         resolve(true);
       }
     });
@@ -168,11 +168,11 @@ function readFromFile(filePath) {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, "utf8", function (err, data) {
       if (err) {
-        console.log('Error while reading file' + err);
+        console.log("Error while reading file" + err);
         resolve(null);
       }
       else {
-        console.log('File loaded');
+        console.log("File loaded");
         resolve(data);
       }
     });

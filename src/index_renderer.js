@@ -145,7 +145,7 @@ function updateSettingsToUi() {
   $("#set_bulk_check").prop("checked", settingsJson.bulkSend);
 
 
-  //message temapltes
+  //message templates
   $("#msg_body_txt").val(settingsJson.messageBodyTemplate);
   $("#msg_header_txt").val(settingsJson.messageHeaderTemplate);
   $("#msg_prop_txt").val(settingsJson.messagePropertiesTemplate);
