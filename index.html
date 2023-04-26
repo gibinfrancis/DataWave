@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IoT Simulator - Beta</title>
+  <!-- styles -->
+  <link rel="stylesheet" href="../node_modules/bulma/css/bulma.min.css" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+
+<body>
+  <!-- parent wrap -->
+  <div class="mainWrap">
+
+    <!-- header right section -->
+    <div class="headerR">
+
+    </div>
+
+    <!-- left navigation panel -->
+    <div class="leftPaneT p-2">
+
+      <!-- direction menu -->
+      <h5 class="has-text-weight-bold mb-1 has-text-link">Direction</h5>
+
+      <div class="radioWrap  mr-3 ml-3">
+        <label for="send-option" class="l-radio">
+          <input type="radio" id="send-option" value="send" checked name="dirOption">
+          <span>Send</span>
+        </label>
+        <label for="receive-option" class="l-radio">
+          <input type="radio" id="receive-option" value="receive" name="dirOption">
+          <span>Receive</span>
+        </label>
+      </div>
+      <hr class="has-background-grey-lighter m-2" />
+
+      <!-- services menu -->
+      <h5 class="has-text-weight-bold mb-1 has-text-link">Services</h5>
+
+      <div class="radioWrap  mr-3 ml-3">
+        <label for="iothub-option" class="l-radio">
+          <input type="radio" id="iothub-option" value="iothub" checked name="servOption">
+          <span>IoT hub</span>
+        </label>
+        <label for="eventhub-option" class="l-radio">
+          <input type="radio" id="eventhub-option" value="eventhub" name="servOption">
+          <span>Event hub</span>
+        </label>
+        <label for="servicebus-option" class="l-radio">
+          <input type="radio" id="servicebus-option" value="servicebus" name="servOption">
+          <span>Service bus</span>
+        </label>
+        <label for="mqtt-option" class="l-radio">
+          <input type="radio" id="mqtt-option" value="mqtt" name="servOption">
+          <span>Mqtt</span>
+        </label>
+        <label for="kafka-option" class="l-radio">
+          <input type="radio" id="kafka-option" value="kafka" name="servOption">
+          <span>Kafka</span>
+        </label>
+      </div>
+      <hr class="has-background-grey-lighter m-2" />
+
+      <!-- Connection settings -->
+      <h5 class="has-text-weight-bold mb-3 has-text-link">Connection Settings</h5>
+
+      <div class="columns mr-1 ml-1">
+        <div class="column">
+
+          <div class="field">
+            <label class="label f12px" id="con_string_lbl1">Device connection String *</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Device connection string" id="con_string_txt1" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label f12px" id="con_string_lbl2">Connection protocol</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="mqtt/amqp/mqttws/amqpws/http" id="con_string_txt2" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl3">Storage connection string</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt3" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl4">Storage connection string</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt4" />
+            </div>
+          </div>
+          <div class="field hidden">
+            <label class="label f12px" id="con_string_lbl5">Storage connection string</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Storage Connection String" id="con_string_txt5" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <hr class="has-background-grey-lighter m-2" />
+
+      <!-- simulation settings -->
+      <h5 class="has-text-weight-bold mb-3 has-text-link">Simulation Settings</h5>
+
+      <div class="columns mr-1 ml-1">
+        <div class="column">
+          <label class="label f12px">Batch</label>
+          <input class="input" type="number" id="set_batch_txt" placeholder="Batch" value="1" />
+        </div>
+        <div class="column">
+          <label class="label f12px">Delay</label>
+          <input class="input" type="number" id="set_delay_txt" placeholder="Delay" value="10" />
+        </div>
+        <div class="column">
+          <label class="label f12px">Count</label>
+          <input class="input" type="number" id="set_count_txt" placeholder="Count" value="0" />
+        </div>
+      </div>
+      <div class="columns mr-1 ml-1">
+        <div class="column">
+          <label class="checkbox">
+            <input type="checkbox" id="set_bulk_check">
+            Bulk Send
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- left pane bottom section -->
+    <div class="leftPaneB p-2">
+      <div class="columns  m-1">
+        <div class="column h100 pt-0 pb-0 has-text-centered">
+          <div class="highlightBar has-background-primary"></div>
+          <label id="count_success_lbl" class="is-outlined">0</label>
+        </div>
+        <div class="column pt-0 pb-0 has-text-centered">
+          <div class="highlightBar has-background-danger"></div>
+          <label id="count_fail_lbl" class="is-outlined">0</label>
+        </div>
+        <div class="column pt-0 pb-0 has-text-centered">
+          <div class="highlightBar has-background-info"></div>
+          <label id="count_total_lbl" class="is-outlined">0</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- right side panel -->
+    <div class="rightPane p-2">
+
+      <!-- other controls -->
+      <div class="columns m-1">
+
+        <div class="column pt-0 pb-0"></div>
+
+        <div class="column pt-0 pb-0">
+          <!-- reset button -->
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Save json"
+            id="cntl_save_btn"><img src="../assets/images/save_icon.png" width="20px" /></button>
+        </div>
+        <div class="column pt-0 pb-0">
+          <!-- reset button -->
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Upload json"
+            id="cntl_load_btn"><img src="../assets/images/load_icon.png" width="20px" /></button>
+        </div>
+        <div class="column pt-0 pb-0">
+          <!-- reset button -->
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Reset" id="cntl_reset_btn"><img
+              src="../assets/images/reset_icon.png" width="19px" /></span></button>
+        </div>
+        <div class="column pt-0 pb-0">
+          <!-- reset button -->
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Clear logs"
+            id="cntl_clear_btn"><img src="../assets/images/clear_log_icon.png" width="20px" /></button>
+        </div>
+        <div class="column pt-0 pb-0">
+          <!-- hide button -->
+          <button class="button is-small is-light is-fullwidth is-outlined p-0" title="Hide/View placeholders"
+            id="cntl_hide_btn"><img src="../assets/images/hide_icon.png" width="20px" id="cntl_hide_img" /></button>
+        </div>
+
+      </div>
+      <hr class="has-background-grey-lighter m-2" />
+
+      <!-- placeholder -->
+      <div class="columns m-1">
+        <div class="column is-8">
+          <h5 class="has-text-weight-bold mb-1 has-text-link">Placeholders</h5>
+        </div>
+        <div class="column is-4">
+          <!-- Generate button -->
+          <button class="button is-info is-fullwidth is-outlined" id="placeholder_gen_btn">Generate</button>
+        </div>
+      </div>
+
+      <div class="placeholderWrap p-2" id="placeholderWrap"></div>
+    </div>
+
+    <!-- footer center panel -->
+    <div class="footerC">
+      <div class="notification is-danger pt-2 pb-2 hidden">
+        <button class="delete" id="close_notif_btn"></button>
+        <p class="label has-text-light" id="log_msg_lbl">&nbsp;</p>
+      </div>
+    </div>
+
+    <!-- footer right panel -->
+    <div class="footerR has-text-centered has-text-grey">
+      <hr class="has-background-grey-lighter m-1" />
+      <h2>Made with I♥️T</h2>
+    </div>
+
+    <!-- footer left panel -->
+    <div class="footerL">
+
+      <!-- progress bar -->
+      <progress class="progress mb-0 is-primary is-radiusless h3px" id="cntl_progress" value="0"
+        max="100">15%</progress>
+
+      <!-- simulation controls -->
+      <div class="columns m-1">
+        <div class="column">
+          <!-- start button -->
+          <button class="button is-primary is-fullwidth is-outlined" id="cntl_start_btn">Start</button>
+        </div>
+        <div class="column">
+          <!-- stop button -->
+          <button class="button is-danger is-fullwidth is-outlined" id="cntl_stop_btn">Stop</button>
+        </div>
+        <div class="column">
+          <!-- preview button -->
+          <button class="button is-info is-fullwidth is-outlined" id="cntl_preview_btn">Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- main center pane -->
+    <div class="centerPane p-2">
+
+      <div id="templateSection">
+
+        <!-- tab heading -->
+        <div class="tabs is-boxed mb-3">
+          <ul>
+            <li class="is-active">
+              <a class="tab-head" id="msg_body_tab">Message Body Template</a>
+            </li>
+            <li>
+              <a class="tab-head" id="msg_header_tab">Message Header Template</a>
+            </li>
+            <li>
+              <a class="tab-head" id="msg_prop_tab">Message Properties Template</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- tab body -->
+        <div class="tab-content" id="msg_body_tab_content" class="mb-2">
+          <textarea id="msg_body_txt" class="textarea"
+            placeholder="json template for your message and wrap placeholders in {{}}" rows="16"></textarea>
+        </div>
+        <div class="tab-content hidden" id="msg_header_tab_content" class="mb-2">
+          <textarea id="msg_header_txt" class="textarea"
+            placeholder="single level json template for your header json, wrap placeholders in {{}}"
+            rows="16"></textarea>
+        </div>
+        <div class="tab-content hidden" id="msg_prop_tab_content" class="mb-2">
+          <textarea id="msg_prop_txt" class="textarea"
+            placeholder="single level json template for your message properties json, wrap placeholders in {{}}"
+            rows="16"></textarea>
+        </div>
+
+      </div>
+
+      <!-- log section -->
+      <div id="logHeadingWrap" class="columns m-1 mb-0">
+        <!-- log banner -->
+        <div class="column is-4">
+          <p class="label mt-2 mb-1 has-text-link">Logs</p>
+        </div>
+        <div class="column is-8 pt-5">
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" checked id="log_msg_check" />
+            Messages
+          </label>
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" id="log_detail_check" />
+            Detailed Logs
+          </label>
+          <label class="checkbox is-pulled-right mr-3">
+            <input type="checkbox" checked id="log_scroll_check" />
+            Scroll To bottom
+          </label>
+        </div>
+      </div>
+      <!-- log render area -->
+      <textarea id="logDisplay" class="textarea has-background-dark has-text-light" rows="17" readonly></textarea>
+
+    </div>
+  </div>
+
+</body>
+
+<script defer src="../node_modules/jquery/dist/jquery.min.js"></script>
+<script defer src="index_renderer.js"></script>
+
+</html>
