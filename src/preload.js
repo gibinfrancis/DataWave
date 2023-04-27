@@ -13,64 +13,49 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
-//exposing api to renderer pages
+
+
+//exposing api to pages
+//this used as the bridge between main and the pages
 contextBridge.exposeInMainWorld("api", {
 
-  //start iot hub Send
-  startIoTHubSend: (settingsJson) => ipcRenderer.invoke("StartSend:IoTHub", settingsJson),
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------SERVICES---------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
-  //stop iot hub Send
-  stopIoTHubSend: (settingsJson) => ipcRenderer.invoke("StopSend:IoTHub", settingsJson),
+  //start publisher
+  startPublisher: (settings) => ipcRenderer.invoke("start:publisher:" + settings.service, settings),
 
-  //start iot hub Receive
-  startIoTHubReceive: (settingsJson) => ipcRenderer.invoke("StartReceive:IoTHub", settingsJson),
+  //stop publisher
+  stopPublisher: (settings) => ipcRenderer.invoke("stop:publisher:" + settings.service, settings),
 
-  //stop iot hub Receive
-  stopIoTHubReceive: (settingsJson) => ipcRenderer.invoke("StopReceive:IoTHub", settingsJson),
+  //start subscriber
+  startSubscriber: (settings) => ipcRenderer.invoke("start:subscriber:" + settings.service, settings),
 
-  //start Event hub Send
-  startEventHubSend: (settingsJson) => ipcRenderer.invoke("StartSend:EventHub", settingsJson),
-
-  //stop Event hub Send
-  stopEventHubSend: (settingsJson) => ipcRenderer.invoke("StopSend:EventHub", settingsJson),
-
-  //start Event hub Receive
-  startEventHubReceive: (settingsJson) => ipcRenderer.invoke("StartReceive:EventHub", settingsJson),
-
-  //stop Event hub Receive
-  stopEventHubReceive: (settingsJson) => ipcRenderer.invoke("StopReceive:EventHub", settingsJson),
-
-  //start Service Bus Send
-  startServiceBusSend: (settingsJson) => ipcRenderer.invoke("StartSend:ServiceBus", settingsJson),
-
-  //stop Service Bus Send
-  stopServiceBusSend: (settingsJson) => ipcRenderer.invoke("StopSend:ServiceBus", settingsJson),
-
-  //start Service Bus Receive
-  startServiceBusReceive: (settingsJson) => ipcRenderer.invoke("StartReceive:ServiceBus", settingsJson),
-
-  //stop Service Bus Receive
-  stopServiceBusReceive: (settingsJson) => ipcRenderer.invoke("StopReceive:ServiceBus", settingsJson),
+  //stop subscriber
+  stopSubscriber: (settings) => ipcRenderer.invoke("stop:subscriber:" + settings.service, settings),
 
   //get generated message
-  getGeneratedMessage: (settingsJson) => ipcRenderer.invoke("GenerateMessage", settingsJson),
+  getGeneratedMessage: (settings) => ipcRenderer.invoke("generate:message", settings),
 
-  //relaunch
-  relaunch: () => ipcRenderer.invoke("Relaunch"),
+  //relaunch the application window
+  relaunch: () => ipcRenderer.invoke("relaunch:window"),
 
-  //Save Simulation File
-  SaveSimulationFile: (settingsJson) => ipcRenderer.invoke("SaveSimulationFile", settingsJson),
+  //save settings json file 
+  saveSettingsToFile: (settings) => ipcRenderer.invoke("save:settings", settings),
 
-  //Load Simulation File
-  LoadSimulationFile: () => ipcRenderer.invoke("LoadSimulationFile"),
+  //load settings from json file
+  loadSettingsFromFile: () => ipcRenderer.invoke("load:settings"),
+
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------TRIGGERS---------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
   //update log
-  onLogUpdate: (message, type) => ipcRenderer.on("LogUpdate", message, type),
+  onLogUpdate: (message, type) => ipcRenderer.on("update:log", message, type),
 
   //update count
-  onCountUpdate: (countObj) => ipcRenderer.on("CountUpdate", countObj),
-
-
+  onCounterUpdate: (counts) => ipcRenderer.on("update:counter", counts),
 
 });
 

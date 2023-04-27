@@ -8,7 +8,7 @@ let _sbSender;
 let _msgSubscription;
 let _msgBatch;
 
-let _settingsJson;
+let _settings;
 let _mainWindow;
 
 let _totalCounter;
@@ -20,23 +20,23 @@ let _cancellationRequestSend = false;
 let _cancellationRequestReceive = false;
 
 //start simulation based on the settings provided
-async function startServiceBusSend(settingsJson, mainWindow) {
+async function startPublisher(settings, mainWindow) {
 
-  _settingsJson = settingsJson;
+  _settings = settings;
   _mainWindow = mainWindow;
 
   //resetting counters and cancellation
-  resetCountersAndCancellation();
+  resetCountersAndVariables();
 
   //get respective protocol
-  printLogMessage("🚀 Starting simulation", "info");
+  printLogMessage("🚀 Start publishing", "info");
 
   //create Service Bus device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createServiceBusClient(_settingsJson.connection.param1);
+  _clientSend = await createServiceBusClient(_settings.connection.param1);
 
   //create service bus sender
-  _sbSender = await createServiceBusSender(_clientSend, _settingsJson.connection.param2);
+  _sbSender = await createServiceBusSender(_clientSend, _settings.connection.param2);
 
   //timer trigger
   while (true) {
@@ -44,10 +44,10 @@ async function startServiceBusSend(settingsJson, mainWindow) {
     //messages array will be used on batched sent
     let messages = [];
 
-    for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
+    for (let i = 0; i < _settings.batch; i++, _msgGenCounter++) {
 
       // Create a message
-      const genMessage = commonService.generateMessage(_settingsJson, _msgGenCounter);
+      const genMessage = commonService.generateMessage(_settings, _msgGenCounter);
 
       //in case of message preparation error
       if (genMessage?.error) {
@@ -71,7 +71,7 @@ async function startServiceBusSend(settingsJson, mainWindow) {
       //print message contents
       printMessageContents(message);
 
-      if (_settingsJson.bulkSend == true)
+      if (_settings.bulkSend == true)
         //adding messages to array
         messages.push(message);
       else {
@@ -82,28 +82,28 @@ async function startServiceBusSend(settingsJson, mainWindow) {
       }
 
       //check if total count reached, if its a fixed count simulation
-      if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+      if ((_settings.count > 0 && _totalCounter >= _settings.count)
         || _cancellationRequestSend == true) {
         break;
       }
     }
 
     //send message batch if messages are available
-    if (_settingsJson.bulkSend == true && messages.length > 0) {
+    if (_settings.bulkSend == true && messages.length > 0) {
       //crete Service Bus message batch
       _msgBatch = await _sbSender.createMessageBatch();
       //send message as batch
       await sendBatchMessages(_sbSender, _msgBatch, messages);
     }
     //check if total count reached, if its a fixed count simulation
-    if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+    if ((_settings.count > 0 && _totalCounter >= _settings.count)
       || _cancellationRequestSend == true) {
       break;
     }
 
     //delay for sometime
     printLogMessage("🕒 Waiting for delay", "info");
-    await commonService.delay(_settingsJson.delay);
+    await commonService.delay(_settings.delay);
     printLogMessage("Delay completed", "details");
 
     //check if cancellation requested during the delay time
@@ -116,35 +116,70 @@ async function startServiceBusSend(settingsJson, mainWindow) {
   await closeServiceBusClient(_sbSender);
   //close client connection
   await closeServiceBusClient(_clientSend);
-  printLogMessage("✅ Simulation completed", "info");
+  printLogMessage("✅ Publish completed", "info");
 
 }
 
 //stop Service Bus simulation
-async function stopServiceBusSend(settingsJson, mainWindow) {
+async function stopPublisher(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
   _cancellationRequestSend = true;
   printLogMessage("🚫 Simulation stop requested", "info");
 }
 
+
+//start subscription based on the settings provided
+async function startSubscriber(settings, mainWindow) {
+
+  _settings = settings;
+  _mainWindow = mainWindow;
+
+  //resetting counters
+  resetCountersAndVariables();
+
+  //get respective protocol
+  printLogMessage("↘️ Starting subscription", "info");
+
+  //create Service Bus device client
+  printLogMessage("Trying to create client", "details");
+  _clientReceive = await createServiceBusClient(_settings.connection.param1);
+
+  //create service bus receiver
+  _sbReceiver = await createServiceBusReceiver(_clientReceive, _settings.connection.param2, _settings.connection.param3);
+
+  //subscribing messages
+  await subscribeServiceBusMessages(_sbReceiver);
+
+  //waiting for stop signal
+  await waitForStopSignal();
+
+  //close client connection
+  await closeServiceBusClient(_sbReceiver);
+  await closeServiceBusClient(_clientReceive);
+  printLogMessage("✅ Subscription completed", "info");
+
+}
+
+//stop Service Bus subscription
+async function stopSubscriber(settings, mainWindow) {
+
+  _mainWindow = _mainWindow ?? mainWindow;
+  _msgSubscription.close();
+  _cancellationRequestReceive = true;
+  printLogMessage("🚫 Subscription stop requested", "info");
+
+}
+
 //print message content
 function printMessageContents(message) {
-  //print header
-  if (message?.properties?.propertyList != null)
-    printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-  //print properties
-  if (message?.properties != null)
-    printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
   //print message
-  printLogMessage("Message body" + "\r\n" + message.body, "message");
+  printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
 }
 
 
 //Connect to Service Bus using the device connection string and protocol
 function createServiceBusClient(serviceBusConString) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _) => {
     // create a Service Bus client using the connection string to the Service Bus namespace
     const sbClient = new ServiceBusClient(serviceBusConString);
     resolve(sbClient);
@@ -153,7 +188,7 @@ function createServiceBusClient(serviceBusConString) {
 
 //Connect to Service Bus using the device connection string and protocol
 function createServiceBusSender(client, topicName) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _) => {
     // create Sender used to create a sender for a queue.
     const sender = client.createSender(topicName);
     resolve(sender);
@@ -177,7 +212,6 @@ function createServiceBusReceiver(client, topicName, subscriptionName) {
 
 //Connect to Service Bus and subscribe messages
 async function subscribeServiceBusMessages(client) {
-
   //receive event
   _msgSubscription = client.subscribe(
     {
@@ -252,13 +286,13 @@ function setPropertiesToObject(destObject, properties) {
   //lopping through the keys
   for (var i = 0; i < keys.length; i++) {
     //adding message properties 
-    destObject.add(keys[i], properties[keys[i]]);
+    destObject[keys[i]] = properties[keys[i]];
   }
 
 }
 
 //reset counters
-function resetCountersAndCancellation() {
+function resetCountersAndVariables() {
   _totalCounter = 0;
   _totalSuccessCounter = 0;
   _totalFailureCounter = 0;
@@ -282,7 +316,7 @@ function updateCounters(success, count = 1) {
     failure: _totalFailureCounter,
     total: _totalCounter
   };
-  _mainWindow.webContents.send("CountUpdate", counterObj);
+  _mainWindow.webContents.send("update:counter", counterObj);
 
 }
 
@@ -302,43 +336,9 @@ function closeServiceBusClient(client) {
 
 //prints log message on both consoles
 function printLogMessage(message, type) {
-  _mainWindow.webContents.send("LogUpdate", message, type);
-  console.log(message);
+  _mainWindow.webContents.send("update:log", message, type);
 }
 
-
-
-//start subscription based on the settings provided
-async function startServiceBusReceive(settingsJson, mainWindow) {
-
-  _settingsJson = settingsJson;
-  _mainWindow = mainWindow;
-
-  //resetting counters
-  resetCountersAndCancellation();
-
-  //get respective protocol
-  printLogMessage("↘️ Starting subscription", "info");
-
-  //create Service Bus device client
-  printLogMessage("Trying to create client", "details");
-  _clientReceive = await createServiceBusClient(_settingsJson.connection.param1);
-
-  //create service bus receiver
-  _sbReceiver = await createServiceBusReceiver(_clientReceive, _settingsJson.connection.param2, _settingsJson.connection.param3);
-
-  //subscribing messages
-  await subscribeServiceBusMessages(_sbReceiver);
-
-  //waiting for stop signal
-  await waitForStopSignal();
-
-  //close client connection
-  await closeServiceBusClient(_sbReceiver);
-  await closeServiceBusClient(_clientReceive);
-  printLogMessage("✅ Subscription completed", "info");
-
-}
 
 //waiting for a stop signal for a period of time
 function waitForStopSignal() {
@@ -352,20 +352,10 @@ function waitForStopSignal() {
   });
 }
 
-//stop Service Bus subscription
-async function stopServiceBusReceive(settingsJson, mainWindow) {
-
-  _mainWindow = _mainWindow ?? mainWindow;
-  _msgSubscription.close();
-  _cancellationRequestReceive = true;
-  printLogMessage("🚫 Subscription stop requested", "info");
-
-}
-
 
 
 //exporting functionalities
-exports.startServiceBusSend = startServiceBusSend;
-exports.stopServiceBusSend = stopServiceBusSend;
-exports.startServiceBusReceive = startServiceBusReceive;
-exports.stopServiceBusReceive = stopServiceBusReceive;
+exports.startPublisher = startPublisher;
+exports.stopPublisher = stopPublisher;
+exports.startSubscriber = startSubscriber;
+exports.stopSubscriber = stopSubscriber;

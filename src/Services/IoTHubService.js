@@ -5,38 +5,40 @@ const commonService = require("./CommonService.js");
 let _clientSend;
 let _clientReceive;
 
-let _settingsJson;
+let _settings;
 let _mainWindow;
 
-let _totalCounter;
-let _totalSuccessCounter;
-let _totalFailureCounter;
-let _msgGenCounter;
+let _totalCounter = 0;
+let _totalSuccessCounter = 0;
+let _totalFailureCounter = 0;
+let _msgGenCounter = 0;
 
 let _cancellationRequestSend = false;
 let _cancellationRequestReceive = false;
 
 //start sending based on the settings provided
-async function startIoTHubSend(settingsJson, mainWindow) {
+async function startPublisher(settings, mainWindow) {
 
-    _settingsJson = settingsJson;
+    _settings = settings;
     _mainWindow = mainWindow;
 
     //resetting counters and variables
     resetCountersAndVariables();
 
     //get respective protocol
-    printLogMessage("🚀 Starting simulation", "info");
-    const protocol = getProtocol(_settingsJson.connection.param2);
+    printLogMessage("🚀 Start publishing", "info");
+
+    const protocol = getProtocol(_settings.connection.param2);
     printLogMessage("Proceeding with protocol : " + protocol.name, "details");
 
     //create client
     printLogMessage("Trying to create client", "details");
-    _clientSend = Client.fromConnectionString(_settingsJson.connection.param1, protocol);
+    _clientSend = Client.fromConnectionString(_settings.connection.param1, protocol);
 
     //connect to iot hub device client
     printLogMessage("Trying to connect to client", "details");
     await connectToIoTHub(_clientSend);
+    printLogMessage("connected to client", "details");
 
     //continuous  trigger
     while (true) {
@@ -45,10 +47,10 @@ async function startIoTHubSend(settingsJson, mainWindow) {
         let messages = [];
 
         //loop for batch of messages
-        for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
+        for (let i = 0; i < _settings.batch; i++, _msgGenCounter++) {
 
             // Create a message
-            const genMessage = commonService.generateMessage(_settingsJson, _msgGenCounter);
+            const genMessage = commonService.generateMessage(_settings, _msgGenCounter);
 
             //in case of message preparation error
             if (genMessage?.error) {
@@ -72,7 +74,7 @@ async function startIoTHubSend(settingsJson, mainWindow) {
             //print message
             printMessageContents(message);
 
-            if (_settingsJson.bulkSend == true)
+            if (_settings.bulkSend == true)
                 //adding messages to array
                 messages.push(message);
             else {
@@ -80,8 +82,8 @@ async function startIoTHubSend(settingsJson, mainWindow) {
                 await sendMessage(_clientSend, message);
             }
 
-            //check if total count reached, if its a fixed count simulation
-            if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+            //check if total count reached, if its a fixed count publish
+            if ((_settings.count > 0 && _totalCounter >= _settings.count)
                 || _cancellationRequestSend == true) {
                 break;
             }
@@ -89,19 +91,20 @@ async function startIoTHubSend(settingsJson, mainWindow) {
 
 
         //send message batch if messages are available
-        if (_settingsJson.bulkSend == true && messages.length > 0) {
+        if (_settings.bulkSend == true && messages.length > 0) {
             //send message as batch
             await sendBatchMessages(_clientSend, messages);
         }
-        //check if total count reached, if its a fixed count simulation
-        if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+
+        //check if total count reached, if its a fixed count publish
+        if ((_settings.count > 0 && _totalCounter >= _settings.count)
             || _cancellationRequestSend == true) {
             break;
         }
 
         //delay for sometime
         printLogMessage("🕒 Waiting for delay", "info");
-        await commonService.delay(_settingsJson.delay);
+        await commonService.delay(_settings.delay);
         printLogMessage("Delay completed", "details");
 
         //check if cancellation requested during the delay time
@@ -112,16 +115,59 @@ async function startIoTHubSend(settingsJson, mainWindow) {
 
     //close client connection
     await closeIoTHubClient(_clientSend);
-    printLogMessage("✅ Simulation completed", "info");
+    printLogMessage("✅ Publish completed", "info");
 
 }
 
 //stop iot hub message send
-async function stopIoTHubSend(settingsJson, mainWindow) {
+async function stopPublisher(settings, mainWindow) {
 
     _mainWindow = _mainWindow ?? mainWindow;
     _cancellationRequestSend = true;
-    printLogMessage("🚫 Simulation stop requested", "info");
+    printLogMessage("🚫 Publish stop requested", "info");
+}
+
+//start subscription based on the settings provided
+async function startSubscriber(settings, mainWindow) {
+
+    _settings = settings;
+    _mainWindow = mainWindow;
+
+    //resetting counters and variables
+    resetCountersAndVariables();
+
+    //get respective protocol
+    printLogMessage("↘️ Starting subscription", "info");
+    const protocol = getProtocol(_settings.connection.param2);
+    printLogMessage("Proceeding with protocol : " + protocol.name, "details");
+
+    //create client
+    printLogMessage("Trying to create client", "details");
+    _clientReceive = Client.fromConnectionString(_settings.connection.param1, protocol);
+
+    //receive event
+    _clientReceive.on("message", receivedMessageHandler);
+
+    //connect to iot hub device client
+    printLogMessage("Trying to connect to client", "details");
+    await connectToIoTHub(_clientReceive);
+    printLogMessage("connected to client", "details");
+
+    //wait for stop signal
+    await waitForStopSignal();
+
+    //close client connection
+    await closeIoTHubClient(_clientReceive);
+    printLogMessage("✅ Subscription completed", "info");
+
+}
+
+//stop iot hub receive
+async function stopSubscriber(settings, mainWindow) {
+
+    _mainWindow = _mainWindow ?? mainWindow;
+    _cancellationRequestReceive = true;
+    printLogMessage("🚫 Subscription stop requested", "info");
 }
 
 
@@ -199,7 +245,7 @@ function setPropertiesToObject(destObject, properties) {
     //lopping through the keys
     for (var i = 0; i < keys.length; i++) {
         //adding message properties 
-        destObject.add(keys[i], properties[keys[i]]);
+        destObject[keys[i]] = properties[keys[i]];
     }
 
 }
@@ -229,7 +275,7 @@ function updateCounters(success, count = 1) {
         failure: _totalFailureCounter,
         total: _totalCounter
     };
-    _mainWindow.webContents.send("CountUpdate", counterObj);
+    _mainWindow.webContents.send("update:counter", counterObj);
 
 }
 
@@ -270,45 +316,7 @@ function getProtocol(protocol) {
 
 //prints log message on both consoles
 function printLogMessage(message, type) {
-    _mainWindow.webContents.send("LogUpdate", message, type);
-    console.log(message);
-}
-
-
-
-
-//start subscription based on the settings provided
-async function startIoTHubReceive(settingsJson, mainWindow) {
-
-    _settingsJson = settingsJson;
-    _mainWindow = mainWindow;
-
-    //resetting counters and variables
-    resetCountersAndVariables();
-
-    //get respective protocol
-    printLogMessage("↘️ Starting subscription", "info");
-    const protocol = getProtocol(_settingsJson.connection.param2);
-    printLogMessage("Proceeding with protocol : " + protocol.name, "details");
-
-    //create client
-    printLogMessage("Trying to create client", "details");
-    _clientReceive = Client.fromConnectionString(_settingsJson.connection.param1, protocol);
-
-    //receive event
-    _clientReceive.on("message", receivedMessageHandler);
-
-    //connect to iot hub device client
-    printLogMessage("Trying to connect to client", "details");
-    await connectToIoTHub(_clientReceive);
-
-    //wait for stop signal
-    await waitForStopSignal();
-
-    //close client connection
-    await closeIoTHubClient(_clientReceive);
-    printLogMessage("✅ Subscription completed", "info");
-
+    _mainWindow.webContents.send("update:log", message, type);
 }
 
 //waiting for a stop signal for a period of time
@@ -325,6 +333,7 @@ function waitForStopSignal() {
 
 //receive message handler
 function receivedMessageHandler(message) {
+
     printLogMessage("📝 Message received", "info");
 
     //print message
@@ -333,34 +342,19 @@ function receivedMessageHandler(message) {
     //update counters
     updateCounters(true);
 
+    //mark the message as read
     _clientReceive.complete(message);
-}
-
-//stop iot hub receive
-async function stopIoTHubReceive(settingsJson, mainWindow) {
-
-    _mainWindow = _mainWindow ?? mainWindow;
-    _cancellationRequestReceive = true;
-    printLogMessage("🚫 Subscription stop requested", "info");
 }
 
 //print message content
 function printMessageContents(message) {
 
-    //print header
-    if (message?.properties?.propertyList != null)
-        printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-    //print properties
-    if (message?.properties != null)
-        printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
     //print message
-    printLogMessage("Message body" + "\r\n" + message.data, "message");
+    printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
 }
 
 //exporting functionalities
-exports.startIoTHubSend = startIoTHubSend;
-exports.stopIoTHubSend = stopIoTHubSend;
-exports.startIoTHubReceive = startIoTHubReceive;
-exports.stopIoTHubReceive = stopIoTHubReceive;
+exports.startPublisher = startPublisher;
+exports.stopPublisher = stopPublisher;
+exports.startSubscriber = startSubscriber;
+exports.stopSubscriber = stopSubscriber;

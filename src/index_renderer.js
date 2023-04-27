@@ -1,7 +1,7 @@
-//simulation settings
-var settingsJson = {
+//settings
+var settings = {
   direction: "send", //send/receive
-  service: "iothub", //iothub/eventhub/servicebus/mqtt
+  service: "iothub", //iothub/eventhub/servicebus/mqtt/kafka
   messageBodyTemplate: null,
   messageHeaderTemplate: null,
   messagePropertiesTemplate: null,
@@ -13,20 +13,24 @@ var settingsJson = {
   bulkSend: false
 };
 
-//simulation flag
-var simulationInProgress = false;
+//application running flag
+var applicationRunning = false;
+
+//-----------------------------------------------------
+//-----------------DOCUMENT READY----------------------
+//-----------------------------------------------------
 
 //when the document is ready
 $(function () {
 
-  //direction button click binding
-  $("input[type=radio][name=dirOption]").on("change", directionButtonClickHandler);
+  //direction radio change handler
+  $("input[type=radio][name=dirOption]").on("change", directionRadioChangeHandler);
 
-  //service button click binding
-  $("input[type=radio][name=servOption]").on("change", serviceButtonClickHandler);
+  //service radio change handler
+  $("input[type=radio][name=servOption]").on("change", serviceRadioChangeHandler);
 
-  //placeholders refresh button click binding
-  $("#placehold_gen_btn").on("click", placeholderGenButtonClickHandler);
+  //placeholders generate button click binding
+  $("#placeholder_gen_btn").on("click", placeholderGenButtonClickHandler);
 
   //start button click event
   $("#cntl_start_btn").on("click", startButtonClickHandler);
@@ -34,14 +38,14 @@ $(function () {
   //stop button click event
   $("#cntl_stop_btn").on("click", stopButtonClickHandler);
 
-  //view generated message button
+  //preview generated message button
   $("#cntl_preview_btn").on("click", previewButtonClickHandler);
 
   //tab button click event
   $(".tab-head").on("click", (e) => tabHeadButtonClickHandler(e));
 
   //notification close click event
-  $("#deleteNotification").on("click", closeNotificationButtonClickHandler);
+  $("#close_notif_btn").on("click", closeNotificationButtonClickHandler);
 
   //clear log button click event
   $("#cntl_clear_btn").on("click", clearLogButtonClickHandler);
@@ -59,10 +63,13 @@ $(function () {
   $("#cntl_save_btn").on("click", fileSaveButtonClickHandler);
 
   //updating connection setting on initial load
-  //updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
+  //updateConSettingsGenParams(settings.service, settings.direction);
 });
 
 
+//-----------------------------------------------------
+//-----------------ON LOG UPDATE-----------------------
+//-----------------------------------------------------
 
 //on log update trigger
 window.api.onLogUpdate((_event, message, type) => {
@@ -70,17 +77,23 @@ window.api.onLogUpdate((_event, message, type) => {
 });
 
 
+//-----------------------------------------------------
+//-----------------ON COUNTER UPDATE-------------------
+//-----------------------------------------------------
+
 //on count update trigger
-window.api.onCountUpdate((_event, countObj) => {
-  $("#count_success_lbl").text(countObj.success);
-  $("#count_fail_lbl").text(countObj.failure);
-  $("#count_total_lbl").text(countObj.total);
+window.api.onCounterUpdate((_event, counts) => {
+  $("#count_success_lbl").text(counts.success);
+  $("#count_fail_lbl").text(counts.failure);
+  $("#count_total_lbl").text(counts.total);
 });
 
 //-----------------------------------------------------
 //-----------------HIDE BUTTON-------------------------
 //-----------------------------------------------------
+
 async function hideButtonClickHandler() {
+  //check the active mode using the image path 
   if ($("#cntl_hide_img").attr("src").endsWith("unhide_icon.png")) {
     $("#cntl_hide_img").attr("src", "../assets/images/hide_icon.png");
     $("#templateSection").removeClass("hidden");
@@ -91,64 +104,73 @@ async function hideButtonClickHandler() {
   }
 }
 
-
 //-----------------------------------------------------
-//-----------------RELAUNCH BUTTON-----------
+//-----------------RELAUNCH BUTTON---------------------
 //-----------------------------------------------------
 async function relaunchButtonClickHandler() {
+  //invoking relaunch service from mail
   await window.api.relaunch();
 }
 
 //-----------------------------------------------------
-//-----------------FILE LOAD BUTTON-----------
+//-----------------FILE LOAD BUTTON--------------------
 //-----------------------------------------------------
 async function fileLoadButtonClickHandler() {
 
-  //invoke file load service
-  let fileContentStr = await window.api.LoadSimulationFile();
+  //invoke file load service and ge the file content
+  let fileContentStr = await window.api.loadSettingsFromFile();
+
+  //validate the response
+  if (fileContentStr == null)
+    return;
+
+  //try to parse the received content from the service
   try {
-    settingsJson = JSON.parse(fileContentStr);
-
-    updateSettingsToUi();
-
-    printMessage("File loaded successfully", "info");
+    settings = JSON.parse(fileContentStr);
   }
   catch (err) {
-    printMessage("unable to load the file due to parsing error", "error");
+    printNotificationMessage("Unable to load the file due to parsing error", "error");
+    return;
   }
+
+  //update the settings Json to UI
+  updatesettingsToUi();
+
+  //completed message
+  printNotificationMessage("File loaded successfully", "info");
 
 }
 
-
-function updateSettingsToUi() {
+//update the settings json to UI components
+function updatesettingsToUi() {
 
   //direction
-  $("#" + settingsJson.direction + "-option").prop("checked", true);
+  $("#" + settings.direction + "-option").prop("checked", true);
 
   //service
-  $("#" + settingsJson.service + "-option").prop("checked", true);
+  $("#" + settings.service + "-option").prop("checked", true);
 
   //updating ui based on the service and direction
-  updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
+  updateConSettingsGenParams(settings.service, settings.direction);
 
   //connection parameters
-  $("#con_string_txt1").val(settingsJson.connection.param1);
-  $("#con_string_txt2").val(settingsJson.connection.param2);
-  $("#con_string_txt3").val(settingsJson.connection.param3);
-  $("#con_string_txt4").val(settingsJson.connection.param4);
-  $("#con_string_txt5").val(settingsJson.connection.param5);
+  $("#con_string_txt1").val(settings.connection.param1);
+  $("#con_string_txt2").val(settings.connection.param2);
+  $("#con_string_txt3").val(settings.connection.param3);
+  $("#con_string_txt4").val(settings.connection.param4);
+  $("#con_string_txt5").val(settings.connection.param5);
 
-  //simulation settings
-  $("#set_batch_txt").val(settingsJson.batch);
-  $("#set_delay_txt").val(settingsJson.delay);
-  $("#set_count_txt").val(settingsJson.count);
-  $("#set_bulk_check").prop("checked", settingsJson.bulkSend);
+  //publish settings
+  $("#set_batch_txt").val(settings.batch);
+  $("#set_delay_txt").val(settings.delay);
+  $("#set_count_txt").val(settings.count);
+  $("#set_bulk_check").prop("checked", settings.bulkSend);
 
 
   //message templates
-  $("#msg_body_txt").val(settingsJson.messageBodyTemplate);
-  $("#msg_header_txt").val(settingsJson.messageHeaderTemplate);
-  $("#msg_prop_txt").val(settingsJson.messagePropertiesTemplate);
+  $("#msg_body_txt").val(settings.messageBodyTemplate);
+  $("#msg_header_txt").val(settings.messageHeaderTemplate);
+  $("#msg_prop_txt").val(settings.messagePropertiesTemplate);
 
 }
 
@@ -161,14 +183,14 @@ async function fileSaveButtonClickHandler() {
   prepareSettings();
 
   //invoke file save service
-  let res = await window.api.SaveSimulationFile(settingsJson);
+  let res = await window.api.saveSettingsToFile(settings);
 
   //show message based on result
   if (res) {
-    printMessage("File saved successfully", "info");
+    printNotificationMessage("File saved successfully", "info");
   }
   else {
-    printMessage("unable to save the file", "error");
+    printNotificationMessage("unable to save the file", "error");
   }
 }
 
@@ -181,7 +203,6 @@ async function clearLogButtonClickHandler() {
 }
 
 
-
 //-----------------------------------------------------
 //-----------------NOTIFICATION CLOSE BUTTON-----------
 //-----------------------------------------------------
@@ -189,15 +210,14 @@ async function closeNotificationButtonClickHandler() {
   $("#log_msg_lbl").parent().addClass("hidden");
 }
 
-
 //-----------------------------------------------------
 //-----------------VIEW BUTTON-------------------------
 //-----------------------------------------------------
+//preview the generated message before sending
 async function previewButtonClickHandler() {
 
   //prepare settings object
   prepareSettings();
-
 
   //validate the settings provided
   let validationRes = validateSettings("generate");
@@ -205,8 +225,8 @@ async function previewButtonClickHandler() {
   if (validationRes == false)
     return;
 
-  //invoke main service to get generated message
-  const genMessage = await window.api.getGeneratedMessage(settingsJson);
+  //invoke service to get generated message
+  const genMessage = await window.api.getGeneratedMessage(settings);
 
   //print generated header message as log
   if (genMessage.header != null)
@@ -220,27 +240,26 @@ async function previewButtonClickHandler() {
 //-----------------------------------------------------
 //-----------------PLACEHOLDER GEN BUTTON--------------
 //-----------------------------------------------------
-function placeholderGenButtonClickHandler() {
 
+function placeholderGenButtonClickHandler() {
 
   //prepare settings object
   prepareSettings();
 
-  //get the template content
-  const templateString = settingsJson.messageBodyTemplate
-    + " " + settingsJson.messageHeaderTemplate
-    + " " + settingsJson.messagePropertiesTemplate;
-
   //validate the settings provided
   let validationRes = validateSettings("placeholderGenerate");
 
+  //validate 
   if (validationRes == false)
     return;
 
+  //get the template content
+  const templateString = settings.messageBodyTemplate
+    + " " + settings.messageHeaderTemplate
+    + " " + settings.messagePropertiesTemplate;
+
   //get placeholder strings from the template
-  const placeholders = templateString
-    .match(/\{\{(.+?)\}\}/g)
-    .map((placeholder) => placeholder.replace(/[{}]/g, ""));
+  const placeholders = templateString?.match(/\{\{(.+?)\}\}/g)?.map((placeholder) => placeholder.replace(/[{}]/g, ""));
 
   //iterate through all placeholders
   placeholders.forEach((placeholder) => {
@@ -255,15 +274,13 @@ function placeholderGenButtonClickHandler() {
     const childElement = document.createElement("div");
 
     //append the placeholder card with placeholder name
-    childElement.innerHTML = phCardTemplate.replaceAll(
-      "{{placeholderName}}",
-      placeholder
-    );
+    childElement.innerHTML = phCardTemplate.replaceAll("{{placeholderName}}", placeholder);
+
     //adding the child
     $("#placeholderWrap").append(childElement);
 
     //adding the change event to drop down
-    $("#ph_opt_" + placeholder + "_sel").change(genOptionDropdownClickHandler);
+    $("#ph_opt_" + placeholder + "_sel").on("change", genOptionDropdownClickHandler);
 
     //prepare placeholder object for adding to list
     var phObj = {
@@ -275,8 +292,10 @@ function placeholderGenButtonClickHandler() {
     updatePlaceholderGenParams(placeholder, phType);
 
     //adding the placeholder to config
-    settingsJson.placeholders.push(phObj);
+    settings.placeholders.push(phObj);
+
   });
+
 }
 
 //-----------------------------------------------------
@@ -291,10 +310,10 @@ function genOptionDropdownClickHandler() {
   const phName = $(this).data("name");
 
   //get the placeholder index from the settings json
-  objIndex = settingsJson.placeholders.findIndex((obj) => obj.id == phName);
+  objIndex = settings.placeholders.findIndex((obj) => obj.id == phName);
 
   //update the configuration
-  settingsJson.placeholders[objIndex].type = type;
+  settings.placeholders[objIndex].type = type;
 
   //update params within placeholder
   updatePlaceholderGenParams(phName, type);
@@ -318,32 +337,30 @@ function tabHeadButtonClickHandler(e) {
 
 }
 
-
-
 //-----------------------------------------------------
 //-----------------DIRECTION RADIO BUTTONS-------------
 //-----------------------------------------------------
-function directionButtonClickHandler() {
+function directionRadioChangeHandler() {
 
   //get the button text as the chosen direction
-  settingsJson.direction = $("input[type=radio][name=dirOption]:checked").val();
+  settings.direction = $("input[type=radio][name=dirOption]:checked").val();
 
   //update the connection settings params
-  updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
+  updateConSettingsGenParams(settings.service, settings.direction);
 
 }
 
 //-----------------------------------------------------
 //-----------------SERVICES BUTTONS--------------------
 //-----------------------------------------------------
-function serviceButtonClickHandler() {
+function serviceRadioChangeHandler() {
 
 
   //get the button text as the chosen direction and remove spaces in it
-  settingsJson.service = $("input[type=radio][name=servOption]:checked").val();
+  settings.service = $("input[type=radio][name=servOption]:checked").val();
 
   //update the connection settings params
-  updateConSettingsGenParams(settingsJson.service, settingsJson.direction);
+  updateConSettingsGenParams(settings.service, settings.direction);
 }
 
 
@@ -352,45 +369,37 @@ function serviceButtonClickHandler() {
 //-----------------------------------------------------
 async function startButtonClickHandler() {
 
-  //check already existing simulation
-  if (simulationInProgress == true)
+  //check application already running
+  if (applicationRunning == true)
     return
 
   //prepare settings object
   prepareSettings();
 
   //validate the settings provided
-  let validationRes = validateSettings(settingsJson.direction);
+  let validationRes = validateSettings(settings.direction);
 
   //check the validation is fine
   if (validationRes == false)
     return;
 
-  //removing the attribute will show a flowing progress bar on screen
-  $("#cntl_progress").removeAttr("value");
+  //start progress bar
+  updateProgressBar(true);
 
   //in progress flag
-  simulationInProgress = true;
+  applicationRunning = true;
 
-  //invoke main service to start simulation
-  if (settingsJson.direction == "send" && settingsJson.service == "iothub")
-    await window.api.startIoTHubSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
-    await window.api.startIoTHubReceive(settingsJson);
-  else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
-    await window.api.startEventHubSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
-    await window.api.startEventHubReceive(settingsJson);
-  else if (settingsJson.direction == "send" && settingsJson.service == "servicebus")
-    await window.api.startServiceBusSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "servicebus")
-    await window.api.startServiceBusReceive(settingsJson);
+  //invoke main service to start sending messages
+  if (settings.direction == "send")
+    await window.api.startPublisher(settings);
+  else if (settings.direction == "receive")
+    await window.api.startSubscriber(settings);
 
-  //setting 0 will disable the continuous flow of progress bar
-  $("#cntl_progress").attr("value", 0);
+  //stop progress bar
+  updateProgressBar(false);
 
   //in progress flag
-  simulationInProgress = false;
+  applicationRunning = false;
 }
 
 
@@ -399,52 +408,59 @@ async function startButtonClickHandler() {
 //-----------------------------------------------------
 async function stopButtonClickHandler() {
 
-  //invoke main service to start simulation
-  if (settingsJson.direction == "send" && settingsJson.service == "iothub")
-    await window.api.stopIoTHubSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "iothub")
-    await window.api.stopIoTHubReceive(settingsJson);
-  else if (settingsJson.direction == "send" && settingsJson.service == "eventhub")
-    await window.api.stopEventHubSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "eventhub")
-    await window.api.stopEventHubReceive(settingsJson);
-  else if (settingsJson.direction == "send" && settingsJson.service == "servicebus")
-    await window.api.stopServiceBusSend(settingsJson);
-  else if (settingsJson.direction == "receive" && settingsJson.service == "servicebus")
-    await window.api.stopServiceBusReceive(settingsJson);
+  //invoke main service to stop sending messages
+  if (settings.direction == "send")
+    await window.api.stopPublisher(settings);
+  else if (settings.direction == "receive")
+    await window.api.stopSubscriber(settings);
 
 }
-
-function printLogMessage(logMessage, type) {
-  //check the message view enabled
-  if (type == "message" && $("#log_msg_check").prop("checked") == false) return;
-  //check the details view enabled
-  else if (type == "details" && $("#log_detail_check").prop("checked") == false)
-    return;
-  //adding the message to log
-  $("#logDisplay").append(
-    //generatedString.replace(/\r\n|\r|\n/g, "") + "\r\n"
-    Date.now() + " : " + logMessage + "\r\n"
-  );
-  //scroll the log section to bottom
-  if ($("#log_scroll_check").prop("checked")) {
-    $("#logDisplay").scrollTop($("#logDisplay")[0].scrollHeight);
-  }
-}
-
-
-
 
 //-----------------------------------------------------------------
 //------------------common services--------------------------------
 //-----------------------------------------------------------------
 
+//print log message 
+function printLogMessage(logMessage, type) {
+
+  //check the message view enabled
+  if (type == "message" && $("#log_msg_check").prop("checked") == false)
+    return;
+  //check the details view enabled
+  else if (type == "details" && $("#log_detail_check").prop("checked") == false)
+    return;
+  //adding the message to log
+  $("#logDisplay").append(
+    Date.now() + " : " + logMessage + "\r\n"
+  );
+  //scroll the log section to bottom
+  if ($("#log_scroll_check").prop("checked") == true) {
+    $("#logDisplay").scrollTop($("#logDisplay")[0].scrollHeight);
+  }
+}
 
 
-//print message
-function printMessage(message, type) {
+//update progress bar
+function updateProgressBar(enable) {
+  //if to enable progress bar
+  if (enable) {
+    //removing the attribute will show a flowing progress bar on screen
+    $("#cntl_progress").removeAttr("value");
+  }
+  else {
+    //setting 0 will disable the continuous flow of progress bar
+    $("#cntl_progress").attr("value", 0);
+  }
+}
 
+
+
+//print notification message
+function printNotificationMessage(message, type) {
+
+  //remove existing type
   $("#log_msg_lbl").parent().removeClass("is-danger is-link");
+
   if (type == "error") {
     $("#log_msg_lbl").parent().addClass("is-danger");
   }
@@ -452,11 +468,11 @@ function printMessage(message, type) {
     $("#log_msg_lbl").parent().addClass("is-link");
   }
   else if (type == "clear") {
-    //$("#log_msg_lbl").text("");
     $("#log_msg_lbl").text("&nbsp;");
     $("#log_msg_lbl").parent().addClass("hidden");
     return;
   }
+  //update log message and make it visible
   $("#log_msg_lbl").text(message);
   $("#log_msg_lbl").parent().removeClass("hidden");
 }
@@ -475,10 +491,12 @@ function updatePlaceholderGenParams(phName, type) {
     ? $("#ph_" + phName + "_txt1").parent().parent().hide()
     : $("#ph_" + phName + "_txt1").parent().parent().show();
 
+  //check if both param3 is not available, 
   phGenOptions[phGenObjIndex].param3 == null
     ? $("#ph_" + phName + "_txt3").parent().parent().hide()
     : $("#ph_" + phName + "_txt3").parent().parent().show();
 
+  //update parameter placeholder text
   $("#ph_" + phName + "_txt1").attr("placeholder", phGenOptions[phGenObjIndex].param1);
   $("#ph_" + phName + "_txt2").attr("placeholder", phGenOptions[phGenObjIndex].param2);
   $("#ph_" + phName + "_txt3").attr("placeholder", phGenOptions[phGenObjIndex].param3);
@@ -525,8 +543,9 @@ function updateConSettingsGenParams(service, direction) {
 
 //get the settings ready
 function prepareSettings() {
+
   //updating connection settings
-  settingsJson.connection = {
+  settings.connection = {
     param1: getValueInType($("#con_string_txt1").val(), "string", null),
     param2: getValueInType($("#con_string_txt2").val(), "string", null),
     param3: getValueInType($("#con_string_txt3").val(), "string", null),
@@ -535,25 +554,26 @@ function prepareSettings() {
   };
 
   //updating message template 
-  settingsJson.messageBodyTemplate = getValueInType($("#msg_body_txt").val(), "string", null);
+  settings.messageBodyTemplate = getValueInType($("#msg_body_txt").val(), "string", null);
   //updating header template
-  settingsJson.messageHeaderTemplate = getValueInType($("#msg_header_txt").val(), "string", null);
+  settings.messageHeaderTemplate = getValueInType($("#msg_header_txt").val(), "string", null);
   //updating properties template
-  settingsJson.messagePropertiesTemplate = getValueInType($("#msg_prop_txt").val(), "string", null);
+  settings.messagePropertiesTemplate = getValueInType($("#msg_prop_txt").val(), "string", null);
   //updating delay settings
-  settingsJson.delay = getValueInType($("#set_delay_txt").val(), "int", 10);
+  settings.delay = getValueInType($("#set_delay_txt").val(), "int", 10);
   //updating batch size settings
-  settingsJson.batch = getValueInType($("#set_batch_txt").val(), "int", 1);
+  settings.batch = getValueInType($("#set_batch_txt").val(), "int", 1);
   //updating fixed count settings
-  settingsJson.count = getValueInType($("#set_count_txt").val(), "int", 0);
+  settings.count = getValueInType($("#set_count_txt").val(), "int", 0);
   //bulk send option
-  settingsJson.bulkSend = $("#set_bulk_check").prop("checked") == true;
+  settings.bulkSend = $("#set_bulk_check").prop("checked") == true;
+
   //update placeholder generation parameters to settings
   //loop though the placeholders
-  for (var i = 0; i < settingsJson.placeholders.length; i++) {
-    settingsJson.placeholders[i].param1 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt1").val(), "string", null);
-    settingsJson.placeholders[i].param2 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt2").val(), "string", null);
-    settingsJson.placeholders[i].param3 = getValueInType($("#ph_" + settingsJson.placeholders[i].id + "_txt3").val(), "string", null);
+  for (var i = 0; i < settings.placeholders.length; i++) {
+    settings.placeholders[i].param1 = getValueInType($("#ph_" + settings.placeholders[i].id + "_txt1").val(), "string", null);
+    settings.placeholders[i].param2 = getValueInType($("#ph_" + settings.placeholders[i].id + "_txt2").val(), "string", null);
+    settings.placeholders[i].param3 = getValueInType($("#ph_" + settings.placeholders[i].id + "_txt3").val(), "string", null);
   }
 
 }
@@ -563,34 +583,33 @@ function prepareSettings() {
 function validateSettings(methodName) {
 
   if ((methodName == "send" || methodName == "generate")
-    && settingsJson.messageBodyTemplate == null) {
-    printMessage("Please provide valid message body", "error");
+    && settings.messageBodyTemplate == null) {
+    printNotificationMessage("Please provide valid message body", "error");
     return false;
   }
   else if ((methodName == "send" || methodName == "generate")
-    && settingsJson.messageBodyTemplate.includes("{{")
-    && settingsJson.placeholders.length == 0) {
-    printMessage("Please generate placeholders", "error");
+    && settings.messageBodyTemplate.includes("{{")
+    && settings.placeholders.length == 0) {
+    printNotificationMessage("Please generate placeholders", "error");
     return false;
   }
   else if ((methodName == "send" || methodName == "receive")
-    && settingsJson.connection.param1 == null) {
-    printMessage("Please provide valid connection string", "error");
+    && settings.connection.param1 == null) {
+    printNotificationMessage("Please provide valid connection string", "error");
     return false;
   }
   if ((methodName == "placeholderGenerate")
-    && settingsJson.messageBodyTemplate == null
-    && settingsJson.messageHeaderTemplate == null
-    && settingsJson.messagePropertiesTemplate == null) {
-    printMessage("Please provide valid message body", "error");
+    && settings.messageBodyTemplate == null
+    && settings.messageHeaderTemplate == null
+    && settings.messagePropertiesTemplate == null) {
+    printNotificationMessage("Please provide valid message body", "error");
     return false;
   }
 
-  printMessage("", "clear");
+  printNotificationMessage("", "clear");
   return true;
 
 }
-
 
 
 //get value from the parameter string

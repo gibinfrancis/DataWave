@@ -2,6 +2,7 @@ const { EventHubProducerClient } = require("@azure/event-hubs");
 const { EventHubConsumerClient, earliestEventPosition } = require("@azure/event-hubs");
 const { ContainerClient } = require("@azure/storage-blob");
 const { BlobCheckpointStore } = require("@azure/eventhubs-checkpointstore-blob");
+
 const commonService = require("./CommonService.js");
 
 let _clientSend;
@@ -10,7 +11,7 @@ let _clientReceive;
 let _msgSubscription;
 let _msgBatch;
 
-let _settingsJson;
+let _settings;
 let _mainWindow;
 
 let _totalCounter;
@@ -21,22 +22,22 @@ let _msgGenCounter;
 let _cancellationRequestSend = false;
 let _cancellationRequestReceive = false;
 
-//start simulation based on the settings provided
-async function startEventHubSend(settingsJson, mainWindow) {
+//start publishing based on the settings provided
+async function startPublisher(settings, mainWindow) {
 
-  _settingsJson = settingsJson;
+  _settings = settings;
   _mainWindow = mainWindow;
 
   //resetting counters and cancellation
-  resetCountersAndCancellation();
+  resetCountersAndVariables();
 
   //get respective protocol
-  printLogMessage("🚀 Starting simulation", "info");
+  printLogMessage("🚀 Start publishing", "info");
 
   //create Event hub device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createEventHubProducerClient(_settingsJson.connection.param1);
-
+  _clientSend = await createEventHubProducerClient(_settings.connection.param1);
+  printLogMessage("Created client", "details");
 
   //timer trigger
   while (true) {
@@ -44,10 +45,10 @@ async function startEventHubSend(settingsJson, mainWindow) {
     //messages array will be used on batched sent
     let messages = [];
 
-    for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
+    for (let i = 0; i < _settings.batch; i++, _msgGenCounter++) {
 
       // Create a message
-      const genMessage = commonService.generateMessage(_settingsJson, _msgGenCounter);
+      const genMessage = commonService.generateMessage(_settings, _msgGenCounter);
 
       //in case of message preparation error
       if (genMessage?.error) {
@@ -71,7 +72,7 @@ async function startEventHubSend(settingsJson, mainWindow) {
       //print message contents
       printMessageContents(message);
 
-      if (_settingsJson.bulkSend == true)
+      if (_settings.bulkSend == true)
         //adding messages to array
         messages.push(message);
       else {
@@ -79,32 +80,31 @@ async function startEventHubSend(settingsJson, mainWindow) {
         _msgBatch = await _clientSend.createBatch();
         //send event 
         await sendMessage(_clientSend, _msgBatch, message);
-        _msgBatch
       }
 
-      //check if total count reached, if its a fixed count simulation
-      if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+      //check if total count reached, if its a fixed count publishing
+      if ((_settings.count > 0 && _totalCounter >= _settings.count)
         || _cancellationRequestSend == true) {
         break;
       }
     }
 
     //send message batch if messages are available
-    if (_settingsJson.bulkSend == true && messages.length > 0) {
+    if (_settings.bulkSend == true && messages.length > 0) {
       //crete event hub message batch
       _msgBatch = await _clientSend.createBatch();
       //send message as batch
       await sendBatchMessages(_clientSend, _msgBatch, messages);
     }
-    //check if total count reached, if its a fixed count simulation
-    if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+    //check if total count reached, if its a fixed count publishing
+    if ((_settings.count > 0 && _totalCounter >= _settings.count)
       || _cancellationRequestSend == true) {
       break;
     }
 
     //delay for sometime
     printLogMessage("🕒 Waiting for delay", "info");
-    await commonService.delay(_settingsJson.delay);
+    await commonService.delay(_settings.delay);
     printLogMessage("Delay completed", "details");
 
     //check if cancellation requested during the delay time
@@ -115,34 +115,65 @@ async function startEventHubSend(settingsJson, mainWindow) {
 
   //close client connection
   await closeEventHubClient(_clientSend);
-  printLogMessage("✅ Simulation completed", "info");
+  printLogMessage("✅ Publish completed", "info");
 
 }
 
-//stop Event hub simulation
-async function stopEventHubSend(settingsJson, mainWindow) {
+//stop Event hub publish
+async function stopPublisher(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
   _cancellationRequestSend = true;
-  printLogMessage("🚫 Simulation stop requested", "info");
+  printLogMessage("🚫 Publish stop requested", "info");
 }
+
+//start subscription based on the settings provided
+async function startSubscriber(settings, mainWindow) {
+
+  _settings = settings;
+  _mainWindow = mainWindow;
+
+  //resetting counters
+  resetCountersAndVariables();
+
+  //get respective protocol
+  printLogMessage("↘️ Starting subscription", "info");
+
+  //create Event hub device client
+  printLogMessage("Trying to create client", "details");
+  _clientReceive = await createEventHubConsumerClient(_settings.connection);
+
+  //subscribing messages
+  await subscribeEventHubMessages(_clientReceive);
+
+  //waiting for stop signal
+  await waitForStopSignal();
+
+  //close client connection
+  await closeEventHubClient(_clientReceive);
+  printLogMessage("✅ Subscription completed", "info");
+
+}
+
+//stop Event hub subscription
+async function stopSubscriber(settings, mainWindow) {
+
+  _mainWindow = _mainWindow ?? mainWindow;
+  _msgSubscription.close();
+  _cancellationRequestReceive = true;
+  printLogMessage("🚫 Subscription stop requested", "info");
+
+}
+
 
 //print message content
 function printMessageContents(message) {
-  //print header
-  if (message?.properties?.propertyList != null)
-    printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-  //print properties
-  if (message?.properties != null)
-    printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
   //print message
-  printLogMessage("Message body" + "\r\n" + JSON.stringify(message.body, null, 2), "message");
+  printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
 }
 
 //Connect to Event Hub using the device connection string and protocol
 function createEventHubProducerClient(eventHubConString) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _) => {
     //create client
     let client = new EventHubProducerClient(eventHubConString);
     resolve(client);
@@ -152,14 +183,15 @@ function createEventHubProducerClient(eventHubConString) {
 //create event hub subscriber client
 async function createEventHubConsumerClient(connection) {
 
+  let containerClient;
+  let checkpointStore;
+  let client;
+
+  connection.param4 = connection.param4 ?? "iot-simulator";
+  connection.param2 = connection.param2 ?? "$Default";
+
   try {
 
-    let containerClient;
-    let checkpointStore;
-    let client;
-
-    connection.param4 = connection.param4 ?? "iot-simulator";
-    connection.param2 = connection.param2 ?? "$Default";
 
     //create container client only if the connection is provided
     if (connection.param3 != "" && connection.param3 != null) {
@@ -193,7 +225,6 @@ async function createEventHubConsumerClient(connection) {
 
 }
 
-
 //Connect to Event Hub and subscribe messages
 async function subscribeEventHubMessages(client) {
 
@@ -210,8 +241,6 @@ async function subscribeEventHubMessages(client) {
           //update counters
           updateCounters(true);
           await context.updateCheckpoint(event);
-          printLogMessage("check point update", "info");
-
         }
       },
       processError: async (err, context) => {
@@ -280,13 +309,13 @@ function setPropertiesToObject(destObject, properties) {
   //lopping through the keys
   for (var i = 0; i < keys.length; i++) {
     //adding message properties 
-    destObject.add(keys[i], properties[keys[i]]);
+    destObject[keys[i]] = properties[keys[i]];
   }
 
 }
 
 //reset counters
-function resetCountersAndCancellation() {
+function resetCountersAndVariables() {
   _totalCounter = 0;
   _totalSuccessCounter = 0;
   _totalFailureCounter = 0;
@@ -310,7 +339,7 @@ function updateCounters(success, count = 1) {
     failure: _totalFailureCounter,
     total: _totalCounter
   };
-  _mainWindow.webContents.send("CountUpdate", counterObj);
+  _mainWindow.webContents.send("update:counter", counterObj);
 
 }
 
@@ -332,39 +361,9 @@ function closeEventHubClient(client) {
 
 //prints log message on both consoles
 function printLogMessage(message, type) {
-  _mainWindow.webContents.send("LogUpdate", message, type);
-  console.log(message);
+  _mainWindow.webContents.send("update:log", message, type);
 }
 
-
-
-//start subscription based on the settings provided
-async function startEventHubReceive(settingsJson, mainWindow) {
-
-  _settingsJson = settingsJson;
-  _mainWindow = mainWindow;
-
-  //resetting counters
-  resetCountersAndCancellation();
-
-  //get respective protocol
-  printLogMessage("↘️ Starting subscription", "info");
-
-  //create Event hub device client
-  printLogMessage("Trying to create client", "details");
-  _clientReceive = await createEventHubConsumerClient(_settingsJson.connection);
-
-  //subscribing messages
-  await subscribeEventHubMessages(_clientReceive);
-
-  //waiting for stop signal
-  await waitForStopSignal();
-
-  //close client connection
-  await closeEventHubClient(_clientReceive);
-  printLogMessage("✅ Subscription completed", "info");
-
-}
 
 //waiting for a stop signal for a period of time
 function waitForStopSignal() {
@@ -378,20 +377,9 @@ function waitForStopSignal() {
   });
 }
 
-//stop Event hub subscription
-async function stopEventHubReceive(settingsJson, mainWindow) {
-
-  _mainWindow = _mainWindow ?? mainWindow;
-  _msgSubscription.close();
-  _cancellationRequestReceive = true;
-  printLogMessage("🚫 Subscription stop requested", "info");
-
-}
-
-
 
 //exporting functionalities
-exports.startEventHubSend = startEventHubSend;
-exports.stopEventHubSend = stopEventHubSend;
-exports.startEventHubReceive = startEventHubReceive;
-exports.stopEventHubReceive = stopEventHubReceive;
+exports.startPublisher = startPublisher;
+exports.stopPublisher = stopPublisher;
+exports.startSubscriber = startSubscriber;
+exports.stopSubscriber = stopSubscriber;

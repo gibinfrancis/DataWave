@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const ioTHubService = require("./services/IoTHubService.js");
 const eventHubService = require("./services/EventHubService.js");
 const serviceBusService = require("./services/ServiceBusService.js");
+const mqttService = require("./services/MqttService.js");
 const commonService = require("./services/CommonService.js");
 const path = require("path");
 const os = require("os");
@@ -16,11 +17,10 @@ const createWindow = () => {
     minWidth: 1200,
     minHeight: 700,
     autoHideMenuBar: true,
-    //titleBarStyle: "hidden",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true,
-      //contextIsolation: false,
+
     },
     icon: __dirname + "/assets/images/IoTSimulator.icns",
   });
@@ -29,6 +29,7 @@ const createWindow = () => {
   mainWindow.loadFile("src/index.html");
 
   // Open the DevTools.
+  //devTools: false
   //mainWindow.webContents.openDevTools();
 };
 
@@ -37,54 +38,103 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
 
-  //iot hub Send start handle
-  ipcMain.handle("StartSend:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubSend(settingsJson, mainWindow));
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------IOT HUB----------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
-  //iot hub Send stop handle
-  ipcMain.handle("StopSend:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubSend(settingsJson, mainWindow));
+  //iot hub publisher start handle
+  ipcMain.handle("start:publisher:iothub", async (event, settings) => ioTHubService.startPublisher(settings, mainWindow));
 
-  //iot hub Receive start handle
-  ipcMain.handle("StartReceive:IoTHub", async (event, settingsJson) => ioTHubService.startIoTHubReceive(settingsJson, mainWindow));
+  //iot hub publisher stop handle
+  ipcMain.handle("stop:publisher:iothub", async (event, settings) => ioTHubService.stopPublisher(settings, mainWindow));
 
-  //iot hub Receive stop handle
-  ipcMain.handle("StopReceive:IoTHub", async (event, settingsJson) => ioTHubService.stopIoTHubReceive(settingsJson, mainWindow));
+  //iot hub subscriber start handle
+  ipcMain.handle("start:subscriber:iothub", async (event, settings) => ioTHubService.startSubscriber(settings, mainWindow));
 
-  //Event hub Send start handle
-  ipcMain.handle("StartSend:EventHub", async (event, settingsJson) => eventHubService.startEventHubSend(settingsJson, mainWindow));
+  //iot hub subscriber stop handle
+  ipcMain.handle("stop:subscriber:iothub", async (event, settings) => ioTHubService.stopSubscriber(settings, mainWindow));
 
-  //Event hub Send stop handle
-  ipcMain.handle("StopSend:EventHub", async (event, settingsJson) => eventHubService.stopEventHubSend(settingsJson, mainWindow));
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------EVENT HUB--------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
-  //Event hub Receive start handle
-  ipcMain.handle("StartReceive:EventHub", async (event, settingsJson) => eventHubService.startEventHubReceive(settingsJson, mainWindow));
+  //event hub publisher start handle
+  ipcMain.handle("start:publisher:eventhub", async (event, settings) => eventHubService.startPublisher(settings, mainWindow));
 
-  //Event hub Receive stop handle
-  ipcMain.handle("StopReceive:EventHub", async (event, settingsJson) => eventHubService.stopEventHubReceive(settingsJson, mainWindow));
+  //event hub publisher stop handle
+  ipcMain.handle("stop:publisher:eventhub", async (event, settings) => eventHubService.stopPublisher(settings, mainWindow));
 
-  //Service bus Send start handle
-  ipcMain.handle("StartSend:ServiceBus", async (event, settingsJson) => serviceBusService.startServiceBusSend(settingsJson, mainWindow));
+  //event hub subscriber start handle
+  ipcMain.handle("start:subscriber:eventhub", async (event, settings) => eventHubService.startSubscriber(settings, mainWindow));
 
-  //Service bus Send stop handle
-  ipcMain.handle("StopSend:ServiceBus", async (event, settingsJson) => serviceBusService.stopServiceBusSend(settingsJson, mainWindow));
+  //event hub subscriber stop handle
+  ipcMain.handle("stop:subscriber:eventhub", async (event, settings) => eventHubService.stopSubscriber(settings, mainWindow));
 
-  //Service bus Receive start handle
-  ipcMain.handle("StartReceive:ServiceBus", async (event, settingsJson) => serviceBusService.startServiceBusReceive(settingsJson, mainWindow));
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------SERVICE BUS------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
-  //Service bus Receive stop handle
-  ipcMain.handle("StopReceive:ServiceBus", async (event, settingsJson) => serviceBusService.stopServiceBusReceive(settingsJson, mainWindow));
+  //service bus publisher start handle
+  ipcMain.handle("start:publisher:servicebus", async (event, settings) => serviceBusService.startPublisher(settings, mainWindow));
+
+  //service bus publisher stop handle
+  ipcMain.handle("stop:publisher:servicebus", async (event, settings) => serviceBusService.stopPublisher(settings, mainWindow));
+
+  //service bus subscriber start handle
+  ipcMain.handle("start:subscriber:servicebus", async (event, settings) => serviceBusService.startSubscriber(settings, mainWindow));
+
+  //service bus subscriber stop handle
+  ipcMain.handle("stop:subscriber:servicebus", async (event, settings) => serviceBusService.stopSubscriber(settings, mainWindow));
+
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------MQTT-------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
+
+  //mqtt publisher start handle
+  ipcMain.handle("start:publisher:mqtt", async (event, settings) => mqttService.startPublisher(settings, mainWindow));
+
+  //mqtt publisher stop handle
+  ipcMain.handle("stop:publisher:mqtt", async (event, settings) => mqttService.stopPublisher(settings, mainWindow));
+
+  //mqtt subscriber start handle
+  ipcMain.handle("start:subscriber:mqtt", async (event, settings) => mqttService.startSubscriber(settings, mainWindow));
+
+  //mqtt subscriber stop handle
+  ipcMain.handle("stop:subscriber:mqtt", async (event, settings) => mqttService.stopSubscriber(settings, mainWindow));
 
 
-  //generate a message
-  ipcMain.handle("GenerateMessage", async (event, settingsJson) => commonService.getPreparedMessageAndHeader(settingsJson, 0));
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------KAFKA------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
 
-  //re launch
-  ipcMain.handle("Relaunch", async () => relaunchApp());
+  // //kafka publisher start handle
+  // ipcMain.handle("start:publisher:kafka", async (event, settings) => mqttService.startPublisher(settings, mainWindow));
 
-  //save simulation json file
-  ipcMain.handle("SaveSimulationFile", async (event, settingsJson) => saveSimulationFile(settingsJson));
+  // //kafka publisher stop handle
+  // ipcMain.handle("stop:publisher:kafka", async (event, settings) => mqttService.stopPublisher(settings, mainWindow));
 
-  //load simulation json file
-  ipcMain.handle("LoadSimulationFile", async () => loadSimulationFile());
+  // //kafka subscriber start handle
+  // ipcMain.handle("start:subscriber:kafka", async (event, settings) => mqttService.startSubscriber(settings, mainWindow));
+
+  // //kafka subscriber stop handle
+  // ipcMain.handle("stop:subscriber:kafka", async (event, settings) => mqttService.stopSubscriber(settings, mainWindow));
+
+
+  //--------------------------------------------------------------------------------------------------------
+  //---------------------------------------COMMON------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------
+
+  //generate a message for preview
+  ipcMain.handle("generate:message", async (event, settings) => commonService.generateMessage(settings, 0));
+
+  //relaunch application window
+  ipcMain.handle("relaunch:window", async () => relaunchApp());
+
+  //save settings to json file
+  ipcMain.handle("save:settings", async (event, settings) => saveSettingsToFile(settings));
+
+  //load settings from json file
+  ipcMain.handle("load:settings", async () => loadSettingsFromFile());
 
   createWindow();
 
@@ -93,6 +143,7 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
 });
 
 // Quit when all windows are closed, except on macOS. There, it"s common
@@ -102,41 +153,47 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-//relaunch the application
+
+//relaunch the application window
 function relaunchApp() {
+  //register a relaunch and then call the quit.
   app.relaunch();
   app.quit();
 }
 
 //function to save the settings json file
-async function saveSimulationFile(settingsJson) {
+async function saveSettingsToFile(settings) {
 
   //show file save dialog
   let result = await dialog.showSaveDialog(mainWindow, {
     properties: ["openFile", "openDirectory"],
     title: "Select the file path to save",
-    defaultPath: path.join(os.homedir(), "Desktop/simulation.json"),
+    defaultPath: path.join(os.homedir(), "Desktop/settings.json"),
     filters: [
       {
         name: "JSON Files",
         extensions: ["json"]
       },],
   });
-
+  //if the user dint cancel the save window
   if (!result.canceled) {
-    console.log(result.filePath.toString());
-    let res = await writeToFile(result.filePath.toString(), JSON.stringify(settingsJson));
+    //write the settings to json
+    let res = await writeToFile(result.filePath.toString(), JSON.stringify(settings));
     return res;
   }
+
+  return null;
 }
 
 //function to load the settings json file
-async function loadSimulationFile() {
+async function loadSettingsFromFile() {
 
+  //show file open dialog
   let result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openFile"]
   });
 
+  //if the user dint cancel the load window
   if (!result.canceled) {
     let res = await readFromFile(result.filePaths[0].toString());
     return res;
@@ -145,17 +202,15 @@ async function loadSimulationFile() {
 }
 
 
-
 //write content to file
 function writeToFile(filePath, content) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _) => {
     fs.writeFile(filePath, content, function (err) {
       if (err) {
         console.log("Error while saving file" + err);
         resolve(false);
       }
       else {
-        console.log("File saved");
         resolve(true);
       }
     });
@@ -165,14 +220,13 @@ function writeToFile(filePath, content) {
 
 //read content from file
 function readFromFile(filePath) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _) => {
     fs.readFile(filePath, "utf8", function (err, data) {
       if (err) {
         console.log("Error while reading file" + err);
         resolve(null);
       }
       else {
-        console.log("File loaded");
         resolve(data);
       }
     });

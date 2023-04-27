@@ -6,7 +6,7 @@ let _clientReceive;
 
 let _msgSubscription;
 
-let _settingsJson;
+let _settings;
 let _mainWindow;
 
 let _totalCounter;
@@ -18,25 +18,23 @@ let _cancellationRequestSend = false;
 let _cancellationRequestReceive = false;
 
 //start simulation based on the settings provided
-async function startMqttSend(settingsJson, mainWindow) {
+async function startMqttSend(settings, mainWindow) {
 
-  _settingsJson = settingsJson;
+  _settings = settings;
   _mainWindow = mainWindow;
 
   //resetting counters and cancellation
-  resetCountersAndCancellation();
+  resetCountersAndVariables();
 
   //get respective protocol
   printLogMessage("🚀 Starting simulation", "info");
 
   //create mqtt device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createMqttClient(_settingsJson.connection);
+  _clientSend = await createMqttClient(_settings.connection);
+  printLogMessage("Created client", "details");
 
-  //connect to mqtt client
-  //await connectMqttClient(_clientSend);
-
-  if (_settingsJson.bulkSend == true)
+  if (_settings.bulkSend == true)
     printLogMessage("bulk send option not available", "info");
 
   //timer trigger
@@ -45,10 +43,10 @@ async function startMqttSend(settingsJson, mainWindow) {
     //messages array will be used on batched sent
     let messages = [];
 
-    for (let i = 0; i < _settingsJson.batch; i++, _msgGenCounter++) {
+    for (let i = 0; i < _settings.batch; i++, _msgGenCounter++) {
 
       // Create a message
-      const genMessage = commonService.generateMessage(_settingsJson, _msgGenCounter);
+      const genMessage = commonService.generateMessage(_settings, _msgGenCounter);
 
       //in case of message preparation error
       if (genMessage?.error) {
@@ -73,29 +71,29 @@ async function startMqttSend(settingsJson, mainWindow) {
       printMessageContents(message);
 
       //send event 
-      await sendMessage(_clientSend, _settingsJson.connection.param4, message);
+      await sendMessage(_clientSend, _settings.connection.param4, message);
 
       //check if total count reached, if its a fixed count simulation
-      if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+      if ((_settings.count > 0 && _totalCounter >= _settings.count)
         || _cancellationRequestSend == true) {
         break;
       }
     }
 
     //send message batch if messages are available
-    if (_settingsJson.bulkSend == true && messages.length > 0) {
+    if (_settings.bulkSend == true && messages.length > 0) {
       //send message as batch will not work for mqtt
       //await sendBatchMessages(_sbSender, _msgBatch, messages);
     }
     //check if total count reached, if its a fixed count simulation
-    if ((_settingsJson.count > 0 && _totalCounter >= _settingsJson.count)
+    if ((_settings.count > 0 && _totalCounter >= _settings.count)
       || _cancellationRequestSend == true) {
       break;
     }
 
     //delay for sometime
     printLogMessage("🕒 Waiting for delay", "info");
-    await commonService.delay(_settingsJson.delay);
+    await commonService.delay(_settings.delay);
     printLogMessage("Delay completed", "details");
 
     //check if cancellation requested during the delay time
@@ -111,24 +109,55 @@ async function startMqttSend(settingsJson, mainWindow) {
 }
 
 //stop mqtt simulation
-async function stopMqttSend(settingsJson, mainWindow) {
+async function stopMqttSend(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
   _cancellationRequestSend = true;
   printLogMessage("🚫 Simulation stop requested", "info");
 }
 
+//start subscription based on the settings provided
+async function startMqttReceive(settings, mainWindow) {
+
+  _settings = settings;
+  _mainWindow = mainWindow;
+
+  //resetting counters
+  resetCountersAndVariables();
+
+  //get respective protocol
+  printLogMessage("↘️ Starting subscription", "info");
+
+  //create mqtt device client
+  printLogMessage("Trying to create client", "details");
+  _clientSend = await createMqttClient(_settings.connection);
+
+  //subscribing messages
+  await subscribeMqttMessages(_sbReceiver);
+
+  //waiting for stop signal
+  await waitForStopSignal();
+
+  //close client connection
+  await closeMqttClient(_clientReceive);
+  printLogMessage("✅ Subscription completed", "info");
+
+}
+
+//stop mqtt subscription
+async function stopMqttReceive(settings, mainWindow) {
+
+  _mainWindow = _mainWindow ?? mainWindow;
+  _msgSubscription.close();
+  _cancellationRequestReceive = true;
+  printLogMessage("🚫 Subscription stop requested", "info");
+
+}
+
+
 //print message content
 function printMessageContents(message) {
-  //print header
-  if (message?.properties?.propertyList != null)
-    printLogMessage("Message header" + "\r\n" + JSON.stringify(message.properties.propertyList, null, 2), "message");
-
-  //print properties
-  if (message?.properties != null)
-    printLogMessage("Message properties" + "\r\n" + JSON.stringify(message.properties, null, 2), "message");
-
   //print message
-  printLogMessage("Message body" + "\r\n" + message.body, "message");
+  printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
 }
 
 
@@ -148,38 +177,38 @@ function createMqttClient(connection) {
 }
 
 
-//Connect to mqtt using the device connection string and protocol
-function createMqttClient(client) {
-  return new Promise((resolve, reject) => {
-    // create a mqtt client using the connection string to the mqtt namespace
-    const client = mqtt.connect(connection.param1, mqttOptions);
-    resolve(client);
-  })
-}
+// //Connect to mqtt using the device connection string and protocol
+// function createMqttClient(client) {
+//   return new Promise((resolve, reject) => {
+//     // create a mqtt client using the connection string to the mqtt namespace
+//     const client = mqtt.connect(connection.param1, mqttOptions);
+//     resolve(client);
+//   })
+// }
 
-//Connect to mqtt using the device connection string and protocol
-function createMqttSender(client, topicName) {
-  return new Promise((resolve, reject) => {
-    // create Sender used to create a sender for a queue.
-    const sender = client.createSender(topicName);
-    resolve(sender);
-  })
-}
+// //Connect to mqtt using the device connection string and protocol
+// function createMqttSender(client, topicName) {
+//   return new Promise((resolve, reject) => {
+//     // create Sender used to create a sender for a queue.
+//     const sender = client.createSender(topicName);
+//     resolve(sender);
+//   })
+// }
 
 
-//Connect to mqtt using the device connection string and protocol
-function createMqttReceiver(client, topicName, subscriptionName) {
-  return new Promise((resolve, reject) => {
-    // create receiver used to create a sender for a queue.
-    let receiver;
-    if (subscriptionName != null)
-      receiver = client.createReceiver(topicName, subscriptionName);
-    else
-      receiver = client.createReceiver(topicName);
+// //Connect to mqtt using the device connection string and protocol
+// function createMqttReceiver(client, topicName, subscriptionName) {
+//   return new Promise((resolve, reject) => {
+//     // create receiver used to create a sender for a queue.
+//     let receiver;
+//     if (subscriptionName != null)
+//       receiver = client.createReceiver(topicName, subscriptionName);
+//     else
+//       receiver = client.createReceiver(topicName);
 
-    resolve(receiver);
-  })
-}
+//     resolve(receiver);
+//   })
+// }
 
 //Connect to mqtt and subscribe messages
 async function subscribeMqttMessages(client, topicName) {
@@ -219,29 +248,29 @@ async function sendMessage(client, topic, message) {
   });
 }
 
-//this will not be used as bulk send is not available
-//send batch message to mqtt
-function sendBatchMessages(client, batch, messages) {
-  return new Promise((resolve, reject) => {
+// //this will not be used as bulk send is not available
+// //send batch message to mqtt
+// function sendBatchMessages(client, batch, messages) {
+//   return new Promise((resolve, reject) => {
 
-    messages.forEach(message => {
-      batch.tryAddMessage(message);
-    });
+//     messages.forEach(message => {
+//       batch.tryAddMessage(message);
+//     });
 
-    //send the message     
-    client.sendMessages(batch).then((res) => {
-      printLogMessage("✔️ Telemetry message sent", "info");
-      printLogMessage("Message Status : sent", "details");
-      updateCounters(true, messages.length);
-      resolve(res);
-    }).catch((err) => {
-      printLogMessage("❌ Error while sending message", "info");
-      printLogMessage("Error : " + err.toString(), "details");
-      updateCounters(false, messages.length);
-      reject(err);
-    });
-  });
-}
+//     //send the message     
+//     client.sendMessages(batch).then((res) => {
+//       printLogMessage("✔️ Telemetry message sent", "info");
+//       printLogMessage("Message Status : sent", "details");
+//       updateCounters(true, messages.length);
+//       resolve(res);
+//     }).catch((err) => {
+//       printLogMessage("❌ Error while sending message", "info");
+//       printLogMessage("Error : " + err.toString(), "details");
+//       updateCounters(false, messages.length);
+//       reject(err);
+//     });
+//   });
+// }
 
 //function to set properties to the respective object
 function setPropertiesToObject(destObject, properties) {
@@ -254,13 +283,13 @@ function setPropertiesToObject(destObject, properties) {
   //lopping through the keys
   for (var i = 0; i < keys.length; i++) {
     //adding message properties 
-    destObject.add(keys[i], properties[keys[i]]);
+    destObject[keys[i]] = properties[keys[i]];
   }
 
 }
 
 //reset counters
-function resetCountersAndCancellation() {
+function resetCountersAndVariables() {
   _totalCounter = 0;
   _totalSuccessCounter = 0;
   _totalFailureCounter = 0;
@@ -284,7 +313,7 @@ function updateCounters(success, count = 1) {
     failure: _totalFailureCounter,
     total: _totalCounter
   };
-  _mainWindow.webContents.send("CountUpdate", counterObj);
+  _mainWindow.webContents.send("update:counter", counterObj);
 
 }
 
@@ -304,39 +333,10 @@ function closeMqttClient(client) {
 
 //prints log message on both consoles
 function printLogMessage(message, type) {
-  _mainWindow.webContents.send("LogUpdate", message, type);
-  console.log(message);
+  _mainWindow.webContents.send("update:log", message, type);
 }
 
 
-
-//start subscription based on the settings provided
-async function startMqttReceive(settingsJson, mainWindow) {
-
-  _settingsJson = settingsJson;
-  _mainWindow = mainWindow;
-
-  //resetting counters
-  resetCountersAndCancellation();
-
-  //get respective protocol
-  printLogMessage("↘️ Starting subscription", "info");
-
-  //create mqtt device client
-  printLogMessage("Trying to create client", "details");
-  _clientSend = await createMqttClient(_settingsJson.connection);
-
-  //subscribing messages
-  await subscribeMqttMessages(_sbReceiver);
-
-  //waiting for stop signal
-  await waitForStopSignal();
-
-  //close client connection
-  await closeMqttClient(_clientReceive);
-  printLogMessage("✅ Subscription completed", "info");
-
-}
 
 //waiting for a stop signal for a period of time
 function waitForStopSignal() {
@@ -349,17 +349,6 @@ function waitForStopSignal() {
     }, 1000);
   });
 }
-
-//stop mqtt subscription
-async function stopMqttReceive(settingsJson, mainWindow) {
-
-  _mainWindow = _mainWindow ?? mainWindow;
-  _msgSubscription.close();
-  _cancellationRequestReceive = true;
-  printLogMessage("🚫 Subscription stop requested", "info");
-
-}
-
 
 
 //exporting functionalities
