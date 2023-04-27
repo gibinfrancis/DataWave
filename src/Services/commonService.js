@@ -3,17 +3,18 @@ var moment = require("moment");
 
 //generate message body, properties and header prepared using its placeholder and template
 function generateMessage(settingsJson, iteration) {
+
   // Create a message and send it to the IoT Hub every two seconds
-  const genPlaceholders = generateTextForPlaceholders(settingsJson.placeholders, iteration);
+  const genValues = generateTextForPlaceholders(settingsJson.placeholders, iteration);
 
   //replace the template with generated placeholder data
-  const genMessage = replaceTemplateWithPlaceholder(settingsJson.messageBodyTemplate, genPlaceholders);
+  const genMessage = replaceTemplateWithPlaceholder(settingsJson.messageBodyTemplate, genValues);
 
   //replace the header template with generated placeholder data
-  const genHeader = replaceTemplateWithPlaceholder(settingsJson.messageHeaderTemplate, genPlaceholders);
+  const genHeader = replaceTemplateWithPlaceholder(settingsJson.messageHeaderTemplate, genValues);
 
   //replace the properties template with generated placeholder data
-  const genProperties = replaceTemplateWithPlaceholder(settingsJson.messagePropertiesTemplate, genPlaceholders);
+  const genProperties = replaceTemplateWithPlaceholder(settingsJson.messagePropertiesTemplate, genValues);
 
   let message = {};
   message.body = genMessage;
@@ -66,6 +67,7 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
         data[placeholder.id] = generateRandomString(randomLength);
         break;
       }
+      //random string from a list
       case "stringRandomList": {
         allowedValuesArray = placeholder.param3?.split(",");
         if (allowedValuesArray) {
@@ -74,16 +76,19 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
         }
         break;
       }
+      //sequence string from a list
       case "stringSequenceList": {
         allowedValuesArray = placeholder.param3?.split(",");
         if (allowedValuesArray)
           data[placeholder.id] = allowedValuesArray[iterationNumber % allowedValuesArray.length];
         break;
       }
+      //random integer
       case "integerRandom": {
         data[placeholder.id] = generateRandomNumber(getValueInType(placeholder.param1, "int"), getValueInType(placeholder.param2, "int"));
         break;
       }
+      //random integer from a list
       case "integerRandomList": {
         allowedValuesArray = placeholder.param3?.split(",").map(Number);
         if (allowedValuesArray) {
@@ -92,20 +97,24 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
         }
         break;
       }
+      //sequence integer from a list
       case "integerSequenceList": {
         allowedValuesArray = placeholder.param3?.split(",").map(Number);
         if (allowedValuesArray)
           data[placeholder.id] = allowedValuesArray[iterationNumber % allowedValuesArray.length];
         break;
       }
+      //integer increment by
       case "integerStepBy": {
         data[placeholder.id] = getValueInType(placeholder.param1, "int", 1) + (getValueInType(placeholder.param2, "int", 1) * iterationNumber);
         break;
       }
+      //random floating number
       case "doubleRandom": {
         data[placeholder.id] = generateRandomDouble(getValueInType(placeholder.param1, "float"), getValueInType(placeholder.param2, "float"));
         break;
       }
+      //random floating from a list
       case "doubleRandomList": {
         allowedValuesArray = placeholder.param3?.split(",").map(Number);
         if (allowedValuesArray) {
@@ -114,30 +123,36 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
         }
         break;
       }
+      //sequence floating number from a list
       case "doubleSequenceList": {
         allowedValuesArray = placeholder.param3?.split(",").map(Number);
         if (allowedValuesArray)
           data[placeholder.id] = allowedValuesArray[iterationNumber % allowedValuesArray.length];
         break;
       }
+      //floating number increment by
       case "doubleStepBy": {
         data[placeholder.id] = getValueInType(placeholder.param1, "float", 1.00) + (getValueInType(placeholder.param2, "float", .10) * iterationNumber);
         break;
       }
+      //boolean random
       case "booleanRandom": {
         data[placeholder.id] = (Math.random() < 0.5) ? "true" : "false";
         break;
       }
+      //sequence boolean from list
       case "booleanSequenceList": {
         allowedValuesArray = placeholder.param3?.split(",").map(Boolean);
         if (allowedValuesArray)
           data[placeholder.id] = "" + allowedValuesArray[iterationNumber % allowedValuesArray.length] + "";
         break;
       }
+      //guid 
       case "guid": {
         data[placeholder.id] = guidV4();
         break;
       }
+      //time in UTC
       case "timeInUtc": {
         let format = getValueInType(placeholder.param3, "string");
         if (format != null)
@@ -146,6 +161,7 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
           data[placeholder.id] = moment.utc().toISOString();
         break;
       }
+      //time in local time
       case "timeInLocal": {
         let format = getValueInType(placeholder.param3, "string");
         if (format != null)
@@ -154,18 +170,22 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
           data[placeholder.id] = moment().toISOString(true);
         break;
       }
+      //time in epoch
       case "timeInEpoch": {
         data[placeholder.id] = moment().unix();
         break;
       }
+      //time in epoch milliseconds
       case "timeInEpochMilli": {
         data[placeholder.id] = moment().valueOf();
         break;
       }
+      //if advanced, the user can provide javascript statement and the same will get evaluated and used
       case "advanced": {
         data[placeholder.id] = eval(getValueInType(placeholder.param3, "string"));
         break;
       }
+      //default - string random
       default: {
         data[placeholder.id] = generateRandomString(5);
         break;
@@ -179,6 +199,8 @@ function generateTextForPlaceholders(placeholders, iterationNumber) {
 
 //generate random string based on th length
 function generateRandomString(length) {
+
+  length = length ?? 5;
   let result = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
