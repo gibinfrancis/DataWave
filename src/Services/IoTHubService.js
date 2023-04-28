@@ -349,9 +349,26 @@ function receivedMessageHandler(message) {
 //print message content
 function printMessageContents(message) {
 
-    //print message
-    printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
+    //print message header from the entire message excluding the body part
+    printLogMessage("Message properties" + "\r\n" + JSON.stringify(message, propertyExcluder), "message");
+
+    //print message body
+    if (typeof message.data === "object") {
+        printLogMessage("Message body" + "\r\n" + JSON.stringify(message.data), "message");
+    }
+    else {
+        printLogMessage("Message body" + "\r\n" + message.data, "message");
+    }
+
 }
+
+//exclude the specified properties
+function propertyExcluder(key, value) {
+    if (key == "data") return undefined;
+    else if (key == "body") return undefined;
+    else return value;
+}
+
 
 //exporting functionalities
 exports.startPublisher = startPublisher;

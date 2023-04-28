@@ -156,8 +156,13 @@ async function stopMqttReceive(settings, mainWindow) {
 
 //print message content
 function printMessageContents(message) {
-  //print message
-  printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
+  //print message body
+  if (typeof message === "object") {
+    printLogMessage("Message body" + "\r\n" + JSON.stringify(message), "message");
+  }
+  else {
+    printLogMessage("Message body" + "\r\n" + message, "message");
+  }
 }
 
 

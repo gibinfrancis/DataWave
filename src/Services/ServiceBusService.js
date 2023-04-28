@@ -170,11 +170,30 @@ async function stopSubscriber(settings, mainWindow) {
 
 }
 
+
 //print message content
 function printMessageContents(message) {
-  //print message
-  printLogMessage("Message body" + "\r\n" + JSON.stringify(message, null, 2), "message");
+
+  // // print message header from the entire message excluding the body part
+  // printLogMessage("Message properties" + "\r\n" + JSON.stringify(message, propertyExcluder), "message");
+
+  //print message body
+  if (typeof message.body === "object") {
+    printLogMessage("Message body" + "\r\n" + JSON.stringify(message.body), "message");
+  }
+  else {
+    printLogMessage("Message body" + "\r\n" + message.body, "message");
+  }
+
 }
+
+//exclude the specified properties
+function propertyExcluder(key, value) {
+  if (key == "data") return undefined;
+  else if (key == "body") return undefined;
+  else return value;
+}
+
 
 
 //Connect to Service Bus using the device connection string and protocol
@@ -216,6 +235,7 @@ async function subscribeServiceBusMessages(client) {
   _msgSubscription = client.subscribe(
     {
       processMessage: async (event) => {
+        console.log(event);
         printLogMessage("📝 Message received", "info");
         printMessageContents(event);
         //update counters
@@ -223,8 +243,9 @@ async function subscribeServiceBusMessages(client) {
 
       },
       processError: async (err) => {
+        console.log(err);
         printLogMessage("🔴 Client connection failed", "info");
-        printLogMessage(err, "details");
+        printLogMessage(err.message, "details");
       },
     }
   );

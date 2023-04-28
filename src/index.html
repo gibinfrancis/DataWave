@@ -58,10 +58,10 @@
           <input type="radio" id="mqtt-option" value="mqtt" name="servOption">
           <span>Mqtt</span>
         </label>
-        <label for="kafka-option" class="l-radio">
+        <!-- <label for="kafka-option" class="l-radio">
           <input type="radio" id="kafka-option" value="kafka" name="servOption">
           <span>Kafka</span>
-        </label>
+        </label> -->
       </div>
       <hr class="has-background-grey-lighter m-2" />
 
@@ -262,17 +262,17 @@
         </div>
 
         <!-- tab body -->
-        <div class="tab-content" id="msg_body_tab_content" class="mb-2">
-          <textarea id="msg_body_txt" class="textarea"
+        <div class="tab-content mb-2 h90" id="msg_body_tab_content">
+          <textarea id="msg_body_txt" class="textarea h100"
             placeholder="json template for your message and wrap placeholders in {{}}" rows="16"></textarea>
         </div>
-        <div class="tab-content hidden" id="msg_header_tab_content" class="mb-2">
-          <textarea id="msg_header_txt" class="textarea"
+        <div class="tab-content hidden mb-2 h90" id="msg_header_tab_content">
+          <textarea id="msg_header_txt" class="textarea h100"
             placeholder="single level json template for your header json, wrap placeholders in {{}}"
             rows="16"></textarea>
         </div>
-        <div class="tab-content hidden" id="msg_prop_tab_content" class="mb-2">
-          <textarea id="msg_prop_txt" class="textarea"
+        <div class="tab-content hidden mb-2 h90" id="msg_prop_tab_content">
+          <textarea id="msg_prop_txt" class="textarea h100"
             placeholder="single level json template for your message properties json, wrap placeholders in {{}}"
             rows="16"></textarea>
         </div>
