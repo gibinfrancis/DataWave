@@ -1,10 +1,8 @@
-const mqtt = require("mqtt");
+const Kafka = require("kafkajs");
 const commonService = require("./CommonService.js");
 
 let _clientSend;
 let _clientReceive;
-
-let _msgSubscription;
 
 let _settings;
 let _mainWindow;
@@ -29,10 +27,13 @@ async function startPublisher(settings, mainWindow) {
   //get respective protocol
   printLogMessage("🚀 Starting simulation", "info");
 
-  //create mqtt device client
+  //create kafka device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createMqttClient(_settings.connection);
-  printLogMessage("Created client", "details");
+  _clientSend = await createKafkaClient(_settings.connection);
+
+  if (_clientReceive == null) {
+    return;
+  }
 
   if (_settings.bulkSend == true)
     printLogMessage("bulk send option not available", "info");
@@ -56,13 +57,7 @@ async function startPublisher(settings, mainWindow) {
       }
 
       //prepare message
-      const message = { body: genMessage.body };
-
-      //set header
-      setPropertiesToObject(message.properties, genMessage.header);
-
-      //set properties
-      setPropertiesToObject(message, genMessage.properties);
+      const message = genMessage.body;
 
       //log message 
       printLogMessage("📝 Message prepared", "info");
@@ -80,11 +75,6 @@ async function startPublisher(settings, mainWindow) {
       }
     }
 
-    //send message batch if messages are available
-    if (_settings.bulkSend == true && messages.length > 0) {
-      //send message as batch will not work for mqtt
-      //await sendBatchMessages(_sbSender, _msgBatch, messages);
-    }
     //check if total count reached, if its a fixed count simulation
     if ((_settings.count > 0 && _totalCounter >= _settings.count)
       || _cancellationRequestSend == true) {
@@ -103,14 +93,15 @@ async function startPublisher(settings, mainWindow) {
   }
 
   //close client connection
-  await closeMqttClient(_clientSend);
+  await closeKafkaClient(_clientSend);
   printLogMessage("✅ Simulation completed", "info");
 
 }
 
-//stop mqtt simulation
+//stop kafka simulation
 async function stopPublisher(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
+  await _clientSend.end();
   _cancellationRequestSend = true;
   printLogMessage("🚫 Simulation stop requested", "info");
 }
@@ -127,28 +118,31 @@ async function startSubscriber(settings, mainWindow) {
   //get respective protocol
   printLogMessage("↘️ Starting subscription", "info");
 
-  //create mqtt device client
+  //create kafka device client
   printLogMessage("Trying to create client", "details");
-  _clientReceive = await createMqttClient(_settings.connection);
+  _clientReceive = await createKafkaClient(_settings.connection);
 
-  console.log(_clientReceive);
+  if (_clientReceive == null) {
+    return;
+  }
+
   //subscribing messages
-  await subscribeMqttMessages(_clientReceive, _settings.connection.param4);
+  await subscribeKafkaMessages(_clientReceive, _settings.connection.param4);
 
   //waiting for stop signal
   await waitForStopSignal();
 
   //close client connection
-  await closeMqttClient(_clientReceive);
+  await closeKafkaClient(_clientReceive);
   printLogMessage("✅ Subscription completed", "info");
 
 }
 
-//stop mqtt subscription
+//stop kafka subscription
 async function stopSubscriber(settings, mainWindow) {
 
   _mainWindow = _mainWindow ?? mainWindow;
-  _msgSubscription.close();
+  await _clientReceive.end();
   _cancellationRequestReceive = true;
   printLogMessage("🚫 Subscription stop requested", "info");
 
@@ -167,135 +161,81 @@ function printMessageContents(message) {
 }
 
 
-//Connect to mqtt using the device connection string and protocol
-function createMqttClient(connection) {
+//Connect to kafka using the device connection string and protocol
+function createKafkaClient(connection) {
   return new Promise((resolve, reject) => {
-    // create a mqtt client using the connection string to the mqtt namespace
-    let mqttOptions;
-    if (connection.param2 != null && connection.param3 != null)
-      mqttOptions = {
-        username: connection.param2,
-        password: connection.param3
+    // create a kafka client using the connection string to the kafka namespace
+    let kafkaOptions;
+    if (connection.param2 != null && connection.param3 != null) {
+      kafkaOptions = {
+        clientId: 'IoT Simulator app',
+        brokers: [connection.param1],
+        ssl: true,
+        sasl: {
+          mechanism: 'plain', // scram-sha-256 or scram-sha-512
+          username: connection.param2,
+          password: connection.param3
+        },
       }
-
-    const client = mqtt.connect(connection.param1, mqttOptions);
-    client.on('error', function (error) {
-      console.log(error)
-    })
-    client.on('connect', function () {
+    }
+    else {
+      kafkaOptions = {
+        clientId: 'IoT Simulator app',
+        brokers: [connection.param1]
+      }
+    }
+    try {
+      const kafka = new Kafka(kafkaOptions);
+      const client = kafka.producer();
       resolve(client);
-    });
-  });
+    }
+    catch (err) {
+      printLogMessage("❌ Error while connecting", "info");
+      printLogMessage(err, "details");
+      resolve(null);
+    }
+  })
 }
 
 
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttClient(client) {
-//   return new Promise((resolve, reject) => {
-//     // create a mqtt client using the connection string to the mqtt namespace
-//     const client = mqtt.connect(connection.param1, mqttOptions);
-//     resolve(client);
-//   })
-// }
-
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttSender(client, topicName) {
-//   return new Promise((resolve, reject) => {
-//     // create Sender used to create a sender for a queue.
-//     const sender = client.createSender(topicName);
-//     resolve(sender);
-//   })
-// }
-
-
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttReceiver(client, topicName, subscriptionName) {
-//   return new Promise((resolve, reject) => {
-//     // create receiver used to create a sender for a queue.
-//     let receiver;
-//     if (subscriptionName != null)
-//       receiver = client.createReceiver(topicName, subscriptionName);
-//     else
-//       receiver = client.createReceiver(topicName);
-
-//     resolve(receiver);
-//   })
-// }
-
-//Connect to mqtt and subscribe messages
-async function subscribeMqttMessages(client, topicName) {
+//Connect to kafka and subscribe messages
+async function subscribeKafkaMessages(client, topicName) {
   //receive event
   return new Promise((resolve, reject) => {
     client.on("message", function (topicName, message) {
       printLogMessage("📝 Message received", "info");
-      printMessageContents(message);
+      printMessageContents(message?.toString());
       //update counters
       updateCounters(true);
     });
 
     client.subscribe(topicName, function (err) {
-      if (err) {
-        printLogMessage("🔴 Client connection failed", "info");
-        printLogMessage(err, "details");
-      }
+      printLogMessage("🔴 Client connection failed", "info");
+      printLogMessage(err, "details");
     });
     resolve(true);
   });
 }
 
 
-//send message to mqtt
+//send message to kafka
 async function sendMessage(client, topic, message) {
   return new Promise((resolve, reject) => {
     //send the message     
-
-    client.publish(topic, JSON.stringify(message), function (error) {
-      if (error) {
-        console.log(error)
-        resolve(false);
-      } else {
-        console.log('Published');
-        resolve(true);
-      }
+    client.publish(topic, JSON.stringify(message)).then((res) => {
+      printLogMessage("✔️ Telemetry message sent", "info");
+      printLogMessage("Message Status : sent", "details");
+      updateCounters(true);
+      resolve(res);
+    }).catch((err) => {
+      printLogMessage("❌ Error while sending message", "info");
+      printLogMessage("Error : " + err.toString(), "details");
+      updateCounters(false);
+      reject(err);
     });
-
-    // client.publish(topic, JSON.stringify(message)).then((res) => {
-    //   printLogMessage("✔️ Telemetry message sent", "info");
-    //   printLogMessage("Message Status : sent", "details");
-    //   updateCounters(true);
-    //   resolve(res);
-    // }).catch((err) => {
-    //   printLogMessage("❌ Error while sending message", "info");
-    //   printLogMessage("Error : " + err.toString(), "details");
-    //   updateCounters(false);
-    //   reject(err);
-    // });
   });
 }
 
-// //this will not be used as bulk send is not available
-// //send batch message to mqtt
-// function sendBatchMessages(client, batch, messages) {
-//   return new Promise((resolve, reject) => {
-
-//     messages.forEach(message => {
-//       batch.tryAddMessage(message);
-//     });
-
-//     //send the message     
-//     client.sendMessages(batch).then((res) => {
-//       printLogMessage("✔️ Telemetry message sent", "info");
-//       printLogMessage("Message Status : sent", "details");
-//       updateCounters(true, messages.length);
-//       resolve(res);
-//     }).catch((err) => {
-//       printLogMessage("❌ Error while sending message", "info");
-//       printLogMessage("Error : " + err.toString(), "details");
-//       updateCounters(false, messages.length);
-//       reject(err);
-//     });
-//   });
-// }
 
 //function to set properties to the respective object
 function setPropertiesToObject(destObject, properties) {
@@ -342,8 +282,8 @@ function updateCounters(success, count = 1) {
 
 }
 
-//Close connection to mqtt
-function closeMqttClient(client) {
+//Close connection to kafka
+function closeKafkaClient(client) {
   return new Promise((resolve, reject) => {
     client.end().then((res) => {
       printLogMessage("🔴 Connection closed successfully", "info");
@@ -381,26 +321,3 @@ exports.startPublisher = startPublisher;
 exports.stopPublisher = stopPublisher;
 exports.startSubscriber = startSubscriber;
 exports.stopSubscriber = stopSubscriber;
-
-
-
-
-
-
-
-// const mqtt = require("mqtt");
-// const client = mqtt.connect("mqtt://test.mosquitto.org" , ;
-
-// client.on("connect", function () {
-//   client.subscribe("presence", function (err) {
-//     if (!err) {
-//       client.publish("presence", "Hello mqtt");
-//     }
-//   });
-// });
-
-// client.on("message", function (topic, message) {
-//   // message is Buffer
-//   console.log(message.toString());
-//   client.end();
-// });
