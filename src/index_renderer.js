@@ -708,7 +708,14 @@ var conSettingGenOptions = [
   {
     name: "mqtt",
     direction: "send",
-    param1: "mqtt connection string"
+    param1: "Mqtt connection string *",
+    param1Place: "Mqtt connection string",
+    param2: "Username",
+    param2Place: "Username",
+    param3: "Password",
+    param3Place: "Password",
+    param4: "Topic name",
+    param4Place: "Topic name",
   },
   {
     name: "iothub",
@@ -743,7 +750,14 @@ var conSettingGenOptions = [
   {
     name: "mqtt",
     direction: "receive",
-    param1: "mqtt connection string"
+    param1: "Mqtt connection string *",
+    param1Place: "Mqtt connection string",
+    param2: "Username",
+    param2Place: "Username",
+    param3: "Password",
+    param3Place: "Password",
+    param4: "Topic name",
+    param4Place: "Topic name",
   }
 ]
 

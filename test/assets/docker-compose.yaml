@@ -1,50 +1,30 @@
-version: "3.7"
+---
+version: '3.7'
+
 services:
   mosquitto:
     image: eclipse-mosquitto:2
     user: mosquitto
     volumes:
-      - config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - mqttbroker-data:/mosquitto/data/
+      - type: bind
+        source: ./config/
+        target: /mosquitto/config/
+      - type: bind
+        source: ./log/
+        target: /mosquitto/log/
+      - type: volume
+        source: data
+        target: /mosquitto/data/
     ports:
-      - 127.0.0.1:1883:1883
+      - target: 1883
+        published: 1883
+        protocol: tcp
+        mode: host
+      - target: 9001
+        published: 9001
+        protocol: tcp
+        mode: host
 
 volumes:
-  mqttbroker-data:
-
-    # mqttbroker:
-    #   image: eclipse-mosquitto:2.0.15
-    #   container_name: mqttbroker
-    #   #network_mode: service:postgresdb    
-    #   restart: always
-    #   networks:
-    #     - fleetdev-nw
-    #   volumes:
-    #     - ../auxiliarymodules/mqttbroker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-    #     - mqttbroker-data:/mosquitto/data/
-    #   ports:
-    #     - 127.0.0.1:1883:1883
-    # zookeeper:
-    #   image: confluentinc/cp-zookeeper:latest
-    #   environment:
-    #     ZOOKEEPER_CLIENT_PORT: 2181
-    #     ZOOKEEPER_TICK_TIME: 2000
-    #   ports:
-    #     - 22181:2181
-
-    # kafka:
-    #   image: confluentinc/cp-kafka:latest
-    #   depends_on:
-    #     - zookeeper
-    #   ports:
-    #     - 29092:29092
-    #   environment:
-    #     KAFKA_BROKER_ID: 1
-    #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-    #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-    #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    # volumes:
-    #   data:
-    #     name: "mqtt-broker-data"
+  data:
+    name: "mqtt-broker-data"

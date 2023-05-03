@@ -4,8 +4,6 @@ const commonService = require("./CommonService.js");
 let _clientSend;
 let _clientReceive;
 
-let _msgSubscription;
-
 let _settings;
 let _mainWindow;
 
@@ -18,7 +16,7 @@ let _cancellationRequestSend = false;
 let _cancellationRequestReceive = false;
 
 //start simulation based on the settings provided
-async function startMqttSend(settings, mainWindow) {
+async function startPublisher(settings, mainWindow) {
 
   _settings = settings;
   _mainWindow = mainWindow;
@@ -32,7 +30,10 @@ async function startMqttSend(settings, mainWindow) {
   //create mqtt device client
   printLogMessage("Trying to create client", "details");
   _clientSend = await createMqttClient(_settings.connection);
-  printLogMessage("Created client", "details");
+
+  if (_clientReceive == null) {
+    return;
+  }
 
   if (_settings.bulkSend == true)
     printLogMessage("bulk send option not available", "info");
@@ -56,7 +57,7 @@ async function startMqttSend(settings, mainWindow) {
       }
 
       //prepare message
-      const message = { body: genMessage.body };
+      const message = genMessage.body;
 
       //set header
       setPropertiesToObject(message.properties, genMessage.header);
@@ -109,14 +110,15 @@ async function startMqttSend(settings, mainWindow) {
 }
 
 //stop mqtt simulation
-async function stopMqttSend(settings, mainWindow) {
+async function stopPublisher(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
+  await _clientSend.end();
   _cancellationRequestSend = true;
   printLogMessage("🚫 Simulation stop requested", "info");
 }
 
 //start subscription based on the settings provided
-async function startMqttReceive(settings, mainWindow) {
+async function startSubscriber(settings, mainWindow) {
 
   _settings = settings;
   _mainWindow = mainWindow;
@@ -129,10 +131,14 @@ async function startMqttReceive(settings, mainWindow) {
 
   //create mqtt device client
   printLogMessage("Trying to create client", "details");
-  _clientSend = await createMqttClient(_settings.connection);
+  _clientReceive = await createMqttClient(_settings.connection);
+
+  if (_clientReceive == null) {
+    return;
+  }
 
   //subscribing messages
-  await subscribeMqttMessages(_sbReceiver);
+  await subscribeMqttMessages(_clientReceive, _settings.connection.param4);
 
   //waiting for stop signal
   await waitForStopSignal();
@@ -144,10 +150,10 @@ async function startMqttReceive(settings, mainWindow) {
 }
 
 //stop mqtt subscription
-async function stopMqttReceive(settings, mainWindow) {
+async function stopSubscriber(settings, mainWindow) {
 
   _mainWindow = _mainWindow ?? mainWindow;
-  _msgSubscription.close();
+  await _clientReceive.end();
   _cancellationRequestReceive = true;
   printLogMessage("🚫 Subscription stop requested", "info");
 
@@ -176,62 +182,36 @@ function createMqttClient(connection) {
         username: connection.param2,
         password: connection.param3
       }
-    const client = mqtt.connectAsync(connection.param1, mqttOptions);
-    resolve(client);
+    try {
+      const client = mqtt.connectAsync(connection.param1, mqttOptions);
+      resolve(client);
+    }
+    catch (err) {
+      printLogMessage("❌ Error while connecting", "info");
+      printLogMessage(err, "details");
+      resolve(null);
+    }
   })
 }
 
 
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttClient(client) {
-//   return new Promise((resolve, reject) => {
-//     // create a mqtt client using the connection string to the mqtt namespace
-//     const client = mqtt.connect(connection.param1, mqttOptions);
-//     resolve(client);
-//   })
-// }
-
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttSender(client, topicName) {
-//   return new Promise((resolve, reject) => {
-//     // create Sender used to create a sender for a queue.
-//     const sender = client.createSender(topicName);
-//     resolve(sender);
-//   })
-// }
-
-
-// //Connect to mqtt using the device connection string and protocol
-// function createMqttReceiver(client, topicName, subscriptionName) {
-//   return new Promise((resolve, reject) => {
-//     // create receiver used to create a sender for a queue.
-//     let receiver;
-//     if (subscriptionName != null)
-//       receiver = client.createReceiver(topicName, subscriptionName);
-//     else
-//       receiver = client.createReceiver(topicName);
-
-//     resolve(receiver);
-//   })
-// }
-
 //Connect to mqtt and subscribe messages
 async function subscribeMqttMessages(client, topicName) {
   //receive event
-  client.on("message", function (topic, message) {
-    printLogMessage("📝 Message received", "info");
-    printMessageContents(message);
-    //update counters
-    updateCounters(true);
-  });
+  return new Promise((resolve, reject) => {
+    client.on("message", function (topicName, message) {
+      printLogMessage("📝 Message received", "info");
+      printMessageContents(message?.toString());
+      //update counters
+      updateCounters(true);
+    });
 
-  client.subscribe(topicName, function (err) {
-    if (err) {
+    client.subscribe(topicName, function (err) {
       printLogMessage("🔴 Client connection failed", "info");
       printLogMessage(err, "details");
-    }
+    });
+    resolve(true);
   });
-
 }
 
 
@@ -239,7 +219,7 @@ async function subscribeMqttMessages(client, topicName) {
 async function sendMessage(client, topic, message) {
   return new Promise((resolve, reject) => {
     //send the message     
-    client.publish(topic, message).then((res) => {
+    client.publish(topic, JSON.stringify(message)).then((res) => {
       printLogMessage("✔️ Telemetry message sent", "info");
       printLogMessage("Message Status : sent", "details");
       updateCounters(true);
@@ -357,10 +337,10 @@ function waitForStopSignal() {
 
 
 //exporting functionalities
-exports.startMqttSend = startMqttSend;
-exports.stopMqttSend = stopMqttSend;
-exports.startMqttReceive = startMqttReceive;
-exports.stopMqttReceive = stopMqttReceive;
+exports.startPublisher = startPublisher;
+exports.stopPublisher = stopPublisher;
+exports.startSubscriber = startSubscriber;
+exports.stopSubscriber = stopSubscriber;
 
 
 
