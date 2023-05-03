@@ -172,6 +172,32 @@ function updatesettingsToUi() {
   $("#msg_header_txt").val(settings.messageHeaderTemplate);
   $("#msg_prop_txt").val(settings.messagePropertiesTemplate);
 
+  //get the template content
+  const templateString = settings.messageBodyTemplate
+    + " " + settings.messageHeaderTemplate
+    + " " + settings.messagePropertiesTemplate;
+
+  //get placeholder strings from the template
+  const placeholders = templateString?.match(/\{\{(.+?)\}\}/g)?.map((placeholder) => placeholder.replace(/[{}]/g, ""));
+
+  //iterate through all placeholders
+  placeholders.forEach((placeholder) => {
+
+    var phObj = renderPlaceholderInUi(placeholder);
+
+    var placeholderIndex = settings.placeholders.findIndex((obj) => obj.id == placeholder);
+
+    $("#ph_opt_" + placeholder + "_sel").val(settings.placeholders[placeholderIndex].type);
+    //update params within placeholder
+    updatePlaceholderGenParams(placeholder, settings.placeholders[placeholderIndex].type);
+
+    //update parameter value
+    $("#ph_" + placeholder + "_txt1").val(settings.placeholders[placeholderIndex].param1);
+    $("#ph_" + placeholder + "_txt2").val(settings.placeholders[placeholderIndex].param2);
+    $("#ph_" + placeholder + "_txt3").val(settings.placeholders[placeholderIndex].param3);
+
+  });
+
 }
 
 //-----------------------------------------------------
@@ -264,38 +290,46 @@ function placeholderGenButtonClickHandler() {
   //iterate through all placeholders
   placeholders.forEach((placeholder) => {
 
-    //assign default placeholder generation method
-    const phType = "stringRandom";
-
-    //check if the placeholder is already present
-    if ($("#ph_" + placeholder).length) return;
-
-    //create a new div element to placed with placeholder card template
-    const childElement = document.createElement("div");
-
-    //append the placeholder card with placeholder name
-    childElement.innerHTML = phCardTemplate.replaceAll("{{placeholderName}}", placeholder);
-
-    //adding the child
-    $("#placeholderWrap").append(childElement);
-
-    //adding the change event to drop down
-    $("#ph_opt_" + placeholder + "_sel").on("change", genOptionDropdownClickHandler);
-
-    //prepare placeholder object for adding to list
-    var phObj = {
-      id: placeholder,
-      type: phType,
-    };
+    var phObj = renderPlaceholderInUi(placeholder);
 
     //update params within placeholder
-    updatePlaceholderGenParams(placeholder, phType);
+    updatePlaceholderGenParams(placeholder, phObj.type);
 
     //adding the placeholder to config
     settings.placeholders.push(phObj);
 
   });
 
+}
+
+
+function renderPlaceholderInUi(placeholder) {
+
+  //assign default placeholder generation method
+  const phType = "stringRandom";
+
+  //check if the placeholder is already present
+  if ($("#ph_" + placeholder).length) return;
+
+  //create a new div element to placed with placeholder card template
+  const childElement = document.createElement("div");
+
+  //append the placeholder card with placeholder name
+  childElement.innerHTML = phCardTemplate.replaceAll("{{placeholderName}}", placeholder);
+
+  //adding the child
+  $("#placeholderWrap").append(childElement);
+
+  //adding the change event to drop down
+  $("#ph_opt_" + placeholder + "_sel").on("change", genOptionDropdownClickHandler);
+
+  //prepare placeholder object for adding to list
+  var phObj = {
+    id: placeholder,
+    type: phType,
+  };
+
+  return phObj;
 }
 
 //-----------------------------------------------------
@@ -537,6 +571,8 @@ function updateConSettingsGenParams(service, direction) {
   $("#con_string_lbl3").text(conSettingGenOptions[objIndex].param3);
   $("#con_string_lbl4").text(conSettingGenOptions[objIndex].param4);
   $("#con_string_lbl5").text(conSettingGenOptions[objIndex].param5);
+
+
 
 }
 

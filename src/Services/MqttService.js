@@ -59,12 +59,6 @@ async function startPublisher(settings, mainWindow) {
       //prepare message
       const message = genMessage.body;
 
-      //set header
-      setPropertiesToObject(message.properties, genMessage.header);
-
-      //set properties
-      setPropertiesToObject(message, genMessage.properties);
-
       //log message 
       printLogMessage("📝 Message prepared", "info");
 
@@ -81,11 +75,6 @@ async function startPublisher(settings, mainWindow) {
       }
     }
 
-    //send message batch if messages are available
-    if (_settings.bulkSend == true && messages.length > 0) {
-      //send message as batch will not work for mqtt
-      //await sendBatchMessages(_sbSender, _msgBatch, messages);
-    }
     //check if total count reached, if its a fixed count simulation
     if ((_settings.count > 0 && _totalCounter >= _settings.count)
       || _cancellationRequestSend == true) {
@@ -233,29 +222,6 @@ async function sendMessage(client, topic, message) {
   });
 }
 
-// //this will not be used as bulk send is not available
-// //send batch message to mqtt
-// function sendBatchMessages(client, batch, messages) {
-//   return new Promise((resolve, reject) => {
-
-//     messages.forEach(message => {
-//       batch.tryAddMessage(message);
-//     });
-
-//     //send the message     
-//     client.sendMessages(batch).then((res) => {
-//       printLogMessage("✔️ Telemetry message sent", "info");
-//       printLogMessage("Message Status : sent", "details");
-//       updateCounters(true, messages.length);
-//       resolve(res);
-//     }).catch((err) => {
-//       printLogMessage("❌ Error while sending message", "info");
-//       printLogMessage("Error : " + err.toString(), "details");
-//       updateCounters(false, messages.length);
-//       reject(err);
-//     });
-//   });
-// }
 
 //function to set properties to the respective object
 function setPropertiesToObject(destObject, properties) {
@@ -341,26 +307,3 @@ exports.startPublisher = startPublisher;
 exports.stopPublisher = stopPublisher;
 exports.startSubscriber = startSubscriber;
 exports.stopSubscriber = stopSubscriber;
-
-
-
-
-
-
-
-// const mqtt = require("mqtt");
-// const client = mqtt.connect("mqtt://test.mosquitto.org" , ;
-
-// client.on("connect", function () {
-//   client.subscribe("presence", function (err) {
-//     if (!err) {
-//       client.publish("presence", "Hello mqtt");
-//     }
-//   });
-// });
-
-// client.on("message", function (topic, message) {
-//   // message is Buffer
-//   console.log(message.toString());
-//   client.end();
-// });

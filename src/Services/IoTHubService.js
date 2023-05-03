@@ -13,8 +13,7 @@ let _totalSuccessCounter = 0;
 let _totalFailureCounter = 0;
 let _msgGenCounter = 0;
 
-let _cancellationRequestSend = false;
-let _cancellationRequestReceive = false;
+let _cancellationRequest = false;
 
 //start sending based on the settings provided
 async function startPublisher(settings, mainWindow) {
@@ -54,7 +53,7 @@ async function startPublisher(settings, mainWindow) {
 
             //in case of message preparation error
             if (genMessage?.error) {
-                _cancellationRequestSend = true;
+                _cancellationRequest = true;
                 printLogMessage("❌ Error while preparing message : " + genMessage.error, "info");
                 break;
             }
@@ -84,7 +83,7 @@ async function startPublisher(settings, mainWindow) {
 
             //check if total count reached, if its a fixed count publish
             if ((_settings.count > 0 && _totalCounter >= _settings.count)
-                || _cancellationRequestSend == true) {
+                || _cancellationRequest == true) {
                 break;
             }
         }
@@ -98,7 +97,7 @@ async function startPublisher(settings, mainWindow) {
 
         //check if total count reached, if its a fixed count publish
         if ((_settings.count > 0 && _totalCounter >= _settings.count)
-            || _cancellationRequestSend == true) {
+            || _cancellationRequest == true) {
             break;
         }
 
@@ -108,7 +107,7 @@ async function startPublisher(settings, mainWindow) {
         printLogMessage("Delay completed", "details");
 
         //check if cancellation requested during the delay time
-        if (_cancellationRequestSend == true) {
+        if (_cancellationRequest == true) {
             break;
         }
     }
@@ -123,7 +122,7 @@ async function startPublisher(settings, mainWindow) {
 async function stopPublisher(settings, mainWindow) {
 
     _mainWindow = _mainWindow ?? mainWindow;
-    _cancellationRequestSend = true;
+    _cancellationRequest = true;
     printLogMessage("🚫 Publish stop requested", "info");
 }
 
@@ -166,7 +165,7 @@ async function startSubscriber(settings, mainWindow) {
 async function stopSubscriber(settings, mainWindow) {
 
     _mainWindow = _mainWindow ?? mainWindow;
-    _cancellationRequestReceive = true;
+    _cancellationRequest = true;
     printLogMessage("🚫 Subscription stop requested", "info");
 }
 
@@ -256,8 +255,7 @@ function resetCountersAndVariables() {
     _totalSuccessCounter = 0;
     _totalFailureCounter = 0;
     _msgGenCounter = 0;
-    _cancellationRequestSend = false;
-    _cancellationRequestReceive = false;
+    _cancellationRequest = false;
 }
 
 //update counters
@@ -301,6 +299,10 @@ function closeIoTHubClient(client) {
 //get the respective protocol object
 function getProtocol(protocol) {
     protocol = protocol?.toLowerCase().trim()
+    if (_settings.bulkSend == true) {
+        printLogMessage("bulk Send is available only in Http", "Info");
+        return require("azure-iot-device-http").Http;
+    }
     if (protocol == "mqttws")
         return require("azure-iot-device-mqtt").MqttWs;
     else if (protocol == "mqtt")
