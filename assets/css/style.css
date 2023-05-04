@@ -19,7 +19,7 @@ body {
   grid-template-areas:
     "leftPaneT centerPane rightPane"
     "leftPaneB centerPane rightPane"
-    "footerL centerPane rightPane"
+    "footerL centerPane footerR"
     "footerL footerC footerR";
 }
 
@@ -184,6 +184,10 @@ input[type=number] {
 
 .h90 {
   height: 90%;
+}
+
+#dataFlowChart {
+  max-height: 80% !important;
 }
 
 #logDisplay {
