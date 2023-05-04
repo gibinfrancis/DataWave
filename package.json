@@ -44,6 +44,7 @@
     "azure-iot-device-mqtt": "^1.16.1",
     "bulma": "^0.9.4",
     "chart.js": "^4.2.1",
+    "chartjs-adapter-moment": "^1.0.1",
     "jquery": "^3.6.4",
     "kafkajs": "^2.2.4",
     "moment": "^2.29.4",
