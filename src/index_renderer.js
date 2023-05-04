@@ -64,7 +64,77 @@ $(function () {
 
   //updating connection setting on initial load
   //updateConSettingsGenParams(settings.service, settings.direction);
+
+  createGraph();
+
 });
+
+
+//-----------------------------------------------------
+//-----------------CREATE GRAPH------------------------
+//-----------------------------------------------------
+
+function createGraph() {
+  const ctx = $('#dataFlowChart');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          data: [{
+            x: "2020-02-15 18:37:39",
+            y: 25
+          },
+          {
+            x: "2020-02-15 18:37:39",
+            y: 10
+          },
+          {
+            x: "2020-02-15 18:33:39",
+            y: 5
+          },
+          {
+            x: "2020-02-15 18:31:39",
+            y: 9
+          },
+          {
+            x: "2020-02-15 18:29:39",
+            y: 11
+          }],
+          backgroundColor: "#485fc7",
+          fill: false,
+          borderColor: '#9F9F9F',
+          tension: 0.1
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          display: false // Hide X axis labels
+        },
+        x: {
+          type: 'time',
+          time: {
+            unit: 'second'
+          },
+          display: false // Hide X axis labels
+        }
+      },
+      plugins: {
+        legend: {
+          display: false,
+        }
+      }
+    }
+  });
+}
+
+
 
 
 //-----------------------------------------------------
@@ -86,6 +156,7 @@ window.api.onCounterUpdate((_event, counts) => {
   $("#count_success_lbl").text(counts.success);
   $("#count_fail_lbl").text(counts.failure);
   $("#count_total_lbl").text(counts.total);
+
 });
 
 //-----------------------------------------------------
