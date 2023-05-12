@@ -271,7 +271,11 @@ function updateCounters(success, count = 1) {
     let counterObj = {
         success: _totalSuccessCounter,
         failure: _totalFailureCounter,
-        total: _totalCounter
+        total: _totalCounter,
+        chart: {
+            count: count,
+            success: success
+        }
     };
     _mainWindow.webContents.send("update:counter", counterObj);
 
@@ -325,7 +329,7 @@ function printLogMessage(message, type) {
 function waitForStopSignal() {
     return new Promise((resolve) => {
         const intervalId = setInterval(() => {
-            if (_cancellationRequestReceive) {
+            if (_cancellationRequest) {
                 clearInterval(intervalId);
                 resolve();
             }

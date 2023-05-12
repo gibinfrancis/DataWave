@@ -16,6 +16,9 @@ var settings = {
 //application running flag
 var applicationRunning = false;
 
+var dataFlowChart;
+var graphMaxTicks = 20;
+
 //-----------------------------------------------------
 //-----------------DOCUMENT READY----------------------
 //-----------------------------------------------------
@@ -67,6 +70,9 @@ $(function () {
 
   createGraph();
 
+  // setInterval(() => {
+  //   dataFlowChart.update();
+  // }, 30000);
 });
 
 
@@ -77,52 +83,30 @@ $(function () {
 function createGraph() {
   const ctx = $('#dataFlowChart');
 
-  new Chart(ctx, {
+  dataFlowChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: [],
       datasets: [
         {
-          data: [{
-            x: "2020-02-15 18:37:39",
-            y: 25
-          },
-          {
-            x: "2020-02-15 18:37:39",
-            y: 10
-          },
-          {
-            x: "2020-02-15 18:33:39",
-            y: 5
-          },
-          {
-            x: "2020-02-15 18:31:39",
-            y: 9
-          },
-          {
-            x: "2020-02-15 18:29:39",
-            y: 11
-          }],
+          data: getGraphDummyData(),
           backgroundColor: "#485fc7",
           fill: false,
-          borderColor: '#9F9F9F',
           tension: 0.1
         },
       ],
     },
     options: {
+      animation: false,
       maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
-          display: false // Hide X axis labels
+          display: false
         },
         x: {
           type: 'time',
-          time: {
-            unit: 'second'
-          },
-          display: false // Hide X axis labels
+          display: false,
         }
       },
       plugins: {
@@ -134,6 +118,20 @@ function createGraph() {
   });
 }
 
+
+function getGraphDummyData() {
+  var dummyData = []
+  var startTime = moment();
+  for (var i = 0; i < 20; i++) {
+    dummyData.push(
+      {
+        x: startTime.subtract(i, 'seconds').format("YYYY-MM-DD hh:mm:ss"),
+        y: 0
+      });
+  }
+  console.log(dummyData);
+  return dummyData;
+}
 
 
 
@@ -156,6 +154,11 @@ window.api.onCounterUpdate((_event, counts) => {
   $("#count_success_lbl").text(counts.success);
   $("#count_fail_lbl").text(counts.failure);
   $("#count_total_lbl").text(counts.total);
+
+  addDataToChart(dataFlowChart, {
+    x: moment().format("YYYY-MM-DD hh:mm:ss"),
+    y: counts.chart.count
+  }, counts.chart.success)
 
 });
 
@@ -494,6 +497,8 @@ async function startButtonClickHandler() {
   //in progress flag
   applicationRunning = true;
 
+  dataFlowChart.data.datasets[0].data = getGraphDummyData();
+
   //invoke main service to start sending messages
   if (settings.direction == "send")
     await window.api.startPublisher(settings);
@@ -524,6 +529,32 @@ async function stopButtonClickHandler() {
 //-----------------------------------------------------------------
 //------------------common services--------------------------------
 //-----------------------------------------------------------------
+
+//add data to chart
+function addDataToChart(chart, data, successFlag) {
+
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.push(data);
+    dataset.backgroundColor = successFlag == true ? "#485fc7" : "red";
+    if (dataset.data.length > 20)
+      dataset.data.shift();
+  });
+
+  chart.data.datasets[0].data = Object.entries(chart.data.datasets[0].data.reduce((acc, current) => {
+    const bin = moment(current.x).subtract(current.x % (1 * 1000), 'ms').format("YYYY-MM-DD hh:mm:ss");
+    acc[bin] = (acc[bin] || 0) + current.y;
+    return acc;
+  }, {})).map(([x, y]) => ({ x, y }));
+
+
+  // chart.data.datasets[0].data.reduce((acc, current) => {
+  //   console.log(current);
+  //   const bin = moment(current.x).startOf("minute").format("YYYY-MM-DD hh:mm");
+  //   acc[bin] = (acc[bin] || 0) + current.y;
+  //   return acc;
+  // }, {});
+  chart.update();
+}
 
 //print log message 
 function printLogMessage(logMessage, type) {
@@ -643,7 +674,29 @@ function updateConSettingsGenParams(service, direction) {
   $("#con_string_lbl4").text(conSettingGenOptions[objIndex].param4);
   $("#con_string_lbl5").text(conSettingGenOptions[objIndex].param5);
 
+  //remove highlighted class from all buttons and add the same to message
+  $(".tab-head").parent().removeClass("is-active");
+  $("#msg_body_tab").parent().addClass("is-active");
 
+  //display respective tab content
+  $(".tab-content").hide();
+  $("#msg_body_tab_content").show();
+
+  if (conSettingGenOptions[objIndex]?.messageHeader == false) {
+    $("#msg_header_tab").parent().hide();
+    $("#msg_header_tab_content").hide();
+  }
+  else {
+    $("#msg_header_tab").parent().show();
+  }
+
+  if (conSettingGenOptions[objIndex]?.messageProperties == false) {
+    $("#msg_prop_tab").parent().hide();
+    $("#msg_prop_tab_content").hide();
+  }
+  else {
+    $("#msg_prop_tab").parent().show();
+  }
 
 }
 
@@ -796,7 +849,7 @@ var conSettingGenOptions = [
     param1: "Device connection string *",
     param1Place: "Device connection string",
     param2: "Connection protocol",
-    param2Place: "mqtt/amqp/mqttws/amqpws/http",
+    param2Place: "mqtt/amqp/mqttws/amqpws/http"
   },
   {
     name: "eventhub",
@@ -823,6 +876,8 @@ var conSettingGenOptions = [
     param3Place: "Password",
     param4: "Topic name",
     param4Place: "Topic name",
+    messageHeader: false,
+    messageProperties: false,
   },
   {
     name: "iothub",
