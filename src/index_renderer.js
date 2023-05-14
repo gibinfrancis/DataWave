@@ -333,7 +333,7 @@ async function previewButtonClickHandler() {
     printLogMessage(JSON.stringify(genMessage.header), "info");
 
   //print generated message as log
-  printLogMessage(genMessage.message, "info");
+  printLogMessage(genMessage.body, "info");
 
 }
 
@@ -870,12 +870,12 @@ var conSettingGenOptions = [
     direction: "send",
     param1: "Mqtt connection string *",
     param1Place: "Mqtt connection string",
+    param4: "Topic name *",
+    param4Place: "Topic name",
     param2: "Username",
     param2Place: "Username",
     param3: "Password",
     param3Place: "Password",
-    param4: "Topic name",
-    param4Place: "Topic name",
     messageHeader: false,
     messageProperties: false,
   },
