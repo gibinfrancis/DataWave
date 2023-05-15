@@ -4,8 +4,10 @@
   "description": "IoT simulator application to send and receive messages",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron-forge start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "repository": {
     "type": "git",
@@ -29,7 +31,11 @@
   },
   "homepage": "https://github.com/gibinfrancis/IoTSimulator#readme",
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.5",
+    "@electron-forge/cli": "^6.1.1",
+    "@electron-forge/maker-deb": "^6.1.1",
+    "@electron-forge/maker-rpm": "^6.1.1",
+    "@electron-forge/maker-squirrel": "^6.1.1",
+    "@electron-forge/maker-zip": "^6.1.1",
     "electron": "^23.1.4"
   },
   "dependencies": {
@@ -45,6 +51,7 @@
     "bulma": "^0.9.4",
     "chart.js": "^4.2.1",
     "chartjs-adapter-moment": "^1.0.1",
+    "electron-squirrel-startup": "^1.0.0",
     "jquery": "^3.6.4",
     "kafkajs": "^2.2.4",
     "moment": "^2.29.4",
