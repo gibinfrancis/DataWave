@@ -1,0 +1,62 @@
+---
+title: Controls
+layout: home
+nav_order: 4
+---
+
+## **Controls**
+
+These controls allow you to run the application:
+
+*Please find the screenshot below*
+
+![Message Explorer](./images/ss_controls.jpg)
+
+### **Start**
+Click this button to start sending messages.
+
+### **Stop**
+Click this button to stop sending messages. If a delay is set, wait for the log to display "Sending Stopped" or "Receiving Stopped" to ensure the process is complete.
+
+### **Preview**
+Use this button to preview message generation and validate that messages are generated according to the configuration and expectations.
+
+
+## **Counters**
+
+These counters display the count of messages sent or received while the application is running:
+
+*Please find the screenshot below*
+
+![Message Explorer](./images/ss_counters.jpg)
+
+### **Green**
+Displays the count of successfully sent or received messages.
+
+### **Red**
+Displays the count of failed messages.
+
+### **Blue**
+Displays the total count of messages.
+
+
+## **Actions**
+
+These actions allow you to perform necessary operations on the application:
+
+*Please find the screenshot below*
+
+![Message Explorer](./images/ss_actions.jpg)
+
+### **Save Json**
+Saves the current run's JSON file, including all settings and parameters, for future use.
+
+### **Upload Json**
+Uploads a saved JSON file to the window and updates settings and parameters accordingly.
+
+### **Reset**
+Restarts the window.
+
+### **Hide/View Message**
+Hides or shows the message template section of the window. This is useful when receiving messages and you want to see the logs section on the full area. You can optionally drag the right bottom corner of the logs section to resize it according to your needs.
+

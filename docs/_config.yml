@@ -1,8 +1,8 @@
-title: Just the Docs Template
-description: A starter template for a Jeykll site using the Just the Docs theme!
+title: Data Wave
+description: A simulator / Receiver application to send and receive messages using services like IoT Hub, Event Hub, Service Bus and Mqtt
 theme: just-the-docs
 
-url: https://just-the-docs.github.io
+url: https://gibinfrancis.github.io/DataWave/
 
 aux_links:
-  Template Repository: https://github.com/just-the-docs/just-the-docs-template
+  Repository: https://github.com/gibinfrancis/DataWave

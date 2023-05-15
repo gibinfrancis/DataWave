@@ -568,7 +568,7 @@ Here you can provide your static or template based message properties that will 
 
 External libraries we are using in our applications
 
-Package Name | Version
+| Package Name | Version |
 |---|---|
 | @azure/event-hubs | 5.9.0 |
 | @azure/eventhubs-checkpointstore-blob | 1.0.1 |

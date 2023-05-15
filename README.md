@@ -1,27 +1,11 @@
-# IoTSimulator
+# Data Wave
 
 ## Overview
 
-Message Explorer application app is an application to send and receive message to and from applications lime IoT Hub, Event Hub, Service Bus, MQTT and Kafka at the moment, we will try to add more services in near future. This can help you to do some basic testing with the services or applications while your development process.
+The Date Wave application is designed to facilitate the exchange of messages between various applications such as IoT Hub, Event Hub, Service Bus, MQTT, and Kafka. The application is currently capable of sending and receiving messages from these services, and in the future, there may be more services added to the list. This feature can be beneficial during the development process as it allows for basic testing of services and applications
 
-This application will help you to prepare messages based on template and send it based on a period of time or time interval. and also it can be used to consume messages from these services and show the messages, which will help you to see the messages coming to it.
-
----
-
-## Supported Services
-
-Please find the supported services below
-
-| Service | Send | Send as Bulk | Receive 
-|:---:|:---:|:---:|:---:|
-| IoT Hub | ✔️ | ✔️ | ✔️ 
-| Event Hub | ✔️ | ✔️ | ✔️ 
-| Service Bus | ✔️ | ✔️ | ✔️ 
-| MQTT | ✔️ | ⭕️ | ✔️ 
+The Date Wave application also enables users to prepare messages using pre-defined templates and send them periodically or at specific time intervals. Additionally, the application can consume messages from the aforementioned services and display them, providing users with a way to view the messages being received by the application. Overall, the Date Wave application is a valuable tool for facilitating message exchange and monitoring during the development process.
 
 ---
 
-✔️ : Available &emsp; | &emsp; ⭕️ : Not available &emsp; | &emsp; ❌ : Not implemented
-
-![Message Explorer](./images/ss_default.JPG)
-
+Please find the full documentation on [link](https://github.com/gibinfrancis/DataWave)
