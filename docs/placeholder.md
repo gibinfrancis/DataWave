@@ -5,7 +5,7 @@ nav_order: 4
 ---
 
 
-## **Placeholders**
+### **Placeholders**
 
 Placeholders allow you to customize your message templates with custom content when sending data to services. To generate placeholders for all placeholders present in the message/header/properties section, click on the "Generate" button. Make sure to use double curly braces to represent a placeholder in your template.
 
@@ -59,11 +59,11 @@ Once you click on the preview button, you can see how the placeholders will prep
 
 ```
 
-## **Placeholder Generation Options**
+### **Placeholder Generation Options**
 
 You can use several functionalities to generate the placeholders. Here are the available options and their descriptions:
 
-### **String - Random**
+#### **String - Random**
 
 This option generates a random string using upper and lower alphabets.
 
@@ -73,7 +73,7 @@ This option generates a random string using upper and lower alphabets.
 | Max length | No | 10 | The maximum length of characters while generating the random string.
 
 
-### **String - Random List**
+#### **String - Random List**
 
 This option takes a random string provided from the list. You can provide values with comma separation.
 
@@ -88,7 +88,7 @@ abc,bcd,cde
 
 
 
-### **String - Sequence List**
+#### **String - Sequence List**
 
 This option takes a string in sequence from the list. You can provide values with comma separation.
 
@@ -101,7 +101,7 @@ abc,bcd,cde
 |---|---|---|---|
 | List - Comma separated string | Yes |  | A string from the list will be taken in sequence to replace the placeholder.
 
-### **Integer - Random**
+#### **Integer - Random**
 
 This option generates a random integer.
 
@@ -111,7 +111,7 @@ This option generates a random integer.
 | Maximum | No | 10 | The maximum number while generating the random integer.
 
 
-### **Integer - Random List**
+#### **Integer - Random List**
 
 This option takes a random integer provided from the list. You can provide values with comma separation.
 
@@ -126,7 +126,7 @@ Example:
 
 
 
-### **Integer - Sequence List**
+#### **Integer - Sequence List**
 
 This option takes a integer in sequence from the list. You can provide values with comma separation.
 
@@ -142,7 +142,7 @@ Example:
 
 
 
-### **Integer - Step by**
+#### **Integer - Step by**
 
 This option takes a integer in sequence  with steps based on your increment value and initial value.
 
@@ -162,7 +162,7 @@ Result : 5, 8, 11, 14....
 
 
 
-### **Double - Random**
+#### **Double - Random**
 
 This option generates a random decimal number.
 
@@ -172,7 +172,7 @@ This option generates a random decimal number.
 | Maximum | No | 10.5 | The maximum number while generating the random decimal number.
 
 
-### **Double - Random List**
+#### **Double - Random List**
 
 This option takes a random decimal number provided from the list. You can provide values with comma separation.
 
@@ -187,7 +187,7 @@ Example:
 
 
 
-### **Double - Sequence List**
+#### **Double - Sequence List**
 
 This option takes a decimal number in sequence from the list. You can provide values with comma separation.
 
@@ -203,7 +203,7 @@ Example:
 
 
 
-### **Integer - Step by**
+#### **Integer - Step by**
 
 This option takes a decimal number in sequence with steps based on your increment value and initial value.
 
@@ -223,13 +223,13 @@ Result : 5, 8.5, 12, 15.5....
 
 
 
-### **Boolean - Random**
+#### **Boolean - Random**
 
 This option generates a random boolean.
 
 
 
-### **Boolean - Sequence List**
+#### **Boolean - Sequence List**
 
 This option takes a boolean in sequence from the list. You can provide values with comma separation.
 
@@ -243,7 +243,7 @@ true,true,false
 | List - Comma separated boolean | Yes |  | A boolean from the list will be taken in sequence to replace the placeholder.
 
 
-### **Guid**
+#### **Guid**
 
 This option generates a V4 guid.
 
@@ -253,7 +253,7 @@ sample result below
 ffa1db86-c73f-4e45-852c-4d9f6b37c90f
 ```
 
-### **Time - in UTC**
+#### **Time - in UTC**
 
 This option generates current time in UTC.
 
@@ -263,7 +263,7 @@ This option generates current time in UTC.
 | Date format  | No |  | you can provide the date format as per the formats available with [moment.js](https://momentjs.com/docs/#/displaying/).
 
 
-### **Time - in local**
+#### **Time - in local**
 
 This option generates current time in local timezone.
 
@@ -272,10 +272,10 @@ This option generates current time in local timezone.
 |---|---|---|---|
 | Date format  | No |  | you can provide the date format as per the formats available with [moment.js](https://momentjs.com/docs/#/displaying/).
 
-### **Time - in Epoch**
+#### **Time - in Epoch**
 
 This option generates current time in Epoch/Unix time.
 
-### **Time - in Epoch Mi": "lliseconds**
+#### **Time - in Epoch Milliseconds**
 
 This option generates current time in Epoch milliseconds / ticks Format.

@@ -5,7 +5,7 @@ nav_order: 5
 ---
 
 
-### **Message** 
+### **Message area** 
 
 you can provide message content in multiple pasts, some services have headers and properties in message to enhance the message, you can use the relative session to provide those details. make sure that the headers and properties will be a single leveled json.
 
@@ -38,15 +38,13 @@ Here you can provide your static or template based message properties that will 
 ```
 
 
-
-
-## **Logs**
+## **Logs logs**
 
 This section displays the logs from the application, and you can control your logs with the following functionalities:
 
 *Please find the screenshot below*
 
-![Message Explorer](./images/ss_actions.jpg)
+![Message Explorer](./images/ss_logoptions.jpg)
 
 ### **Scroll To bottom**
 Click this button to display and scroll to the bottom of the logs.
@@ -56,3 +54,26 @@ Click this button to display detailed logs.
 
 ### **Messages**
 Click this button to display message contents.
+
+---
+
+## **Actions area**
+
+These actions allow you to perform necessary operations on the application:
+
+*Please find the screenshot below*
+
+![Message Explorer](./images/ss_actions.jpg)
+
+### **Save Json**
+Saves the current run's JSON file, including all settings and parameters, for future use.
+
+### **Upload Json**
+Uploads a saved JSON file to the window and updates settings and parameters accordingly.
+
+### **Reset**
+Restarts the window.
+
+### **Hide/View Message**
+Hides or shows the message template section of the window. This is useful when receiving messages and you want to see the logs section on the full area. You can optionally drag the right bottom corner of the logs section to resize it according to your needs.
+

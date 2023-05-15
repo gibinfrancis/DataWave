@@ -10,7 +10,7 @@ The Date Wave application also enables users to prepare messages using pre-defin
 
 ---
 
-## **Supported Services**
+### **Supported Services**
 
 Please find the supported services below
 
@@ -23,7 +23,7 @@ Please find the supported services below
 | Kafka | 🔷 | ⭕️ | 🔷 
 
 
-Please find the supported message functionalities below
+Please find the supported message components below
 
 | Service | Message body | Message Header | Message Properties 
 |:---:|:---:|:---:|:---:|

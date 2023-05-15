@@ -20,6 +20,8 @@ The "Direction" setting determines whether messages are being sent or received.
 | Send | Send messages to the service
 | Receive | Receive messages from the service
 
+---
+
 ### **Services**
 
 The "Service" setting determines which service to use.
@@ -36,19 +38,20 @@ The "Service" setting determines which service to use.
 | MQTT | MQTT service
 | Kafka - Coming Soon| Kafka service  
 
+---
 
 ### **Connection Settings**
 
 The "Connection Settings" will vary based on the chosen direction and service. Please refer to the service-specific settings provided below.
 
-### IoT Hub - Send
+#### **IoT Hub - Send**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
 Device connection string | Yes | | Azure IoT Hub device connection string.
 Connection protocol | No | http | Connection protocol to send the message to IoT Hub. You can choose any option from mqtt, mqttws, amqp, amqpws, or http.
 
-### IoT Hub - Receive
+#### **IoT Hub - Receive**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
@@ -56,13 +59,13 @@ Device connection string | Yes | | Azure IoT Hub device connection string.
 Connection protocol | No | http | Connection protocol to receive the message from IoT Hub. You can choose any option from mqtt, mqttws, amqp, amqpws, or http.
 
 
-### Event Hub - Send
+#### **Event Hub - Send**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
 Event hub connection string | Yes | | Event hub connection string.
 
-### Event Hub - Receive
+#### **Event Hub - Receive**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
@@ -71,14 +74,14 @@ Consumer group | No | $Default | Consumer group name.
 Storage account connection string | No | | Storage account connection string to keep the check point. If not provided, you will receive all the messages available in the consumer group. If provided, you will receive the messages which are not processed.
 Storage account container name | No | iot-simulator | Storage account container name. If storage connection is available and container name is not provided, the program will try to create a container with the default name. Make sure the connection trying policy has write access.
 
-### Service Bus - Send
+#### **Service Bus - Send**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
 Service bus connection string | Yes | | Service bus connection string.
 Topic/Queue name | Yes | | Topic or Queue name to send the message.
 
-### Service Bus - Receive
+#### **Service Bus - Receive**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
@@ -86,7 +89,7 @@ Service bus connection string | Yes | | Service bus connection string.
 Topic/Queue name | Yes | | Topic or Queue name to send the message.
 Topic Subscription name | No | | Topic subscriber name, if subscribing to topic instead of queue.
 
-### MQTT - Send
+#### **MQTT - Send**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
@@ -96,7 +99,7 @@ User name | No | | User name to connect to the MQTT server. Should provide both 
 Password | No | | Password to connect to the MQTT server. Should provide both user name and password to use the authenticated connection, else the same will be treated as anonymous connection.
 
 
-### MQTT - Receive
+#### **MQTT - Receive**
 
 | Option | Required | Default | Description 
 |---|---|---|---|
@@ -114,7 +117,7 @@ The Publish Settings section specifies the parameters for publishing messages. T
 
 *Please find the screenshot below*
 
-![Message Explorer](./images/ss_services.jpg)
+![Message Explorer](./images/ss_publish.jpg)
 
 | Option | Required | Default | Description 
 |---|---|---|---|

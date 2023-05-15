@@ -4,6 +4,8 @@ layout: home
 nav_order: 2
 ---
 
+Please find the details about the usage here
+
 *Please find the screenshot below*
 ![Message Explorer](./images/ss_default.jpg)
 
@@ -20,5 +22,8 @@ To use the application, please follow these steps:
 7. You can preview the message generation by clicking the "Preview" button before publishing.
 8. Click the "Start" button to start publishing the messages. Logs will be displayed on the screen.
 9. Click the "Stop" button to stop the publishing process.
+
+
+### **Receive Message**
 
 For receiving a message, follow the same steps 1-3 as for sending. After providing the connection settings, click the "Start" button to begin receiving messages. Logs will be displayed on the screen. Click the "Stop" button to stop the receiving process.

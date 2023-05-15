@@ -8,4 +8,4 @@ The Date Wave application also enables users to prepare messages using pre-defin
 
 ---
 
-Please find the full documentation on [link](https://github.com/gibinfrancis/DataWave)
+Please find the full documentation on [link](https://gibinfrancis.github.io/DataWave/)
