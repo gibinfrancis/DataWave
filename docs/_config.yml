@@ -1,8 +1,8 @@
 title: Data Wave
 description: A simulator / Receiver application to send and receive messages using services like IoT Hub, Event Hub, Service Bus and Mqtt
 theme: just-the-docs
-logo: "https://gibinfrancis.github.io/DataWave/assets/images/logo.png"
-favicon_ico: "https://gibinfrancis.github.io/DataWave/assets/images/logo.ico"
+logo: "https://raw.githubusercontent.com/gibinfrancis/DataWave/main/assets/images/logo.png"
+favicon_ico: "https://raw.githubusercontent.com/gibinfrancis/DataWave/main/assets/images/logo.ico"
 
 url: https://gibinfrancis.github.io/DataWave/
 

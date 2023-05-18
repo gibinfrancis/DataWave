@@ -19,8 +19,7 @@ let _totalSuccessCounter;
 let _totalFailureCounter;
 let _msgGenCounter;
 
-let _cancellationRequestSend = false;
-let _cancellationRequestReceive = false;
+let _cancellationRequest = false;
 
 //start publishing based on the settings provided
 async function startPublisher(settings, mainWindow) {
@@ -52,7 +51,7 @@ async function startPublisher(settings, mainWindow) {
 
       //in case of message preparation error
       if (genMessage?.error) {
-        _cancellationRequestSend = true;
+        _cancellationRequest = true;
         printLogMessage("❌ Error while preparing message : " + genMessage.error, "info");
         break;
       }
@@ -84,7 +83,7 @@ async function startPublisher(settings, mainWindow) {
 
       //check if total count reached, if its a fixed count publishing
       if ((_settings.count > 0 && _totalCounter >= _settings.count)
-        || _cancellationRequestSend == true) {
+        || _cancellationRequest == true) {
         break;
       }
     }
@@ -98,7 +97,7 @@ async function startPublisher(settings, mainWindow) {
     }
     //check if total count reached, if its a fixed count publishing
     if ((_settings.count > 0 && _totalCounter >= _settings.count)
-      || _cancellationRequestSend == true) {
+      || _cancellationRequest == true) {
       break;
     }
 
@@ -108,7 +107,7 @@ async function startPublisher(settings, mainWindow) {
     printLogMessage("Delay completed", "details");
 
     //check if cancellation requested during the delay time
-    if (_cancellationRequestSend == true) {
+    if (_cancellationRequest == true) {
       break;
     }
   }
@@ -122,7 +121,7 @@ async function startPublisher(settings, mainWindow) {
 //stop Event hub publish
 async function stopPublisher(settings, mainWindow) {
   _mainWindow = _mainWindow ?? mainWindow;
-  _cancellationRequestSend = true;
+  _cancellationRequest = true;
   printLogMessage("🚫 Publish stop requested", "info");
 }
 
@@ -159,7 +158,7 @@ async function stopSubscriber(settings, mainWindow) {
 
   _mainWindow = _mainWindow ?? mainWindow;
   _msgSubscription.close();
-  _cancellationRequestReceive = true;
+  _cancellationRequest = true;
   printLogMessage("🚫 Subscription stop requested", "info");
 
 }
@@ -337,8 +336,7 @@ function resetCountersAndVariables() {
   _totalSuccessCounter = 0;
   _totalFailureCounter = 0;
   _msgGenCounter = 0;
-  _cancellationRequestSend = false;
-  _cancellationRequestReceive = false;
+  _cancellationRequest = false;
 }
 
 //update counters
@@ -390,7 +388,7 @@ function printLogMessage(message, type) {
 function waitForStopSignal() {
   return new Promise((resolve) => {
     const intervalId = setInterval(() => {
-      if (_cancellationRequestReceive) {
+      if (_cancellationRequest) {
         clearInterval(intervalId);
         resolve();
       }
