@@ -4,10 +4,11 @@
   "description": "IoT simulator application to send and receive messages",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make --targets @electron-forge/maker-zip"
+    "make-zip": "electron-forge make --targets @electron-forge/maker-zip",
+    "make-exe": "electron-forge make"
   },
   "repository": {
     "type": "git",
