@@ -16,9 +16,6 @@ var settings = {
 //application running flag
 var applicationRunning = false;
 
-var dataFlowChart;
-var graphMaxTicks = 20;
-
 //-----------------------------------------------------
 //-----------------DOCUMENT READY----------------------
 //-----------------------------------------------------
@@ -68,70 +65,9 @@ $(function () {
   //updating connection setting on initial load
   //updateConSettingsGenParams(settings.service, settings.direction);
 
-  createGraph();
 
-  // setInterval(() => {
-  //   dataFlowChart.update();
-  // }, 30000);
 });
 
-
-//-----------------------------------------------------
-//-----------------CREATE GRAPH------------------------
-//-----------------------------------------------------
-
-function createGraph() {
-  const ctx = $('#dataFlowChart');
-
-  dataFlowChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: [],
-      datasets: [
-        {
-          data: getGraphDummyData(),
-          backgroundColor: "#485fc7",
-          fill: false,
-          tension: 0.1
-        },
-      ],
-    },
-    options: {
-      animation: false,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          display: false
-        },
-        x: {
-          type: 'time',
-          display: false,
-        }
-      },
-      plugins: {
-        legend: {
-          display: false,
-        }
-      }
-    }
-  });
-}
-
-
-function getGraphDummyData() {
-  var dummyData = []
-  var startTime = moment();
-  for (var i = 0; i < 20; i++) {
-    dummyData.push(
-      {
-        x: startTime.subtract(i, 'seconds').format("YYYY-MM-DD hh:mm:ss"),
-        y: 0
-      });
-  }
-  console.log(dummyData);
-  return dummyData;
-}
 
 
 
@@ -154,12 +90,6 @@ window.api.onCounterUpdate((_event, counts) => {
   $("#count_success_lbl").text(counts.success);
   $("#count_fail_lbl").text(counts.failure);
   $("#count_total_lbl").text(counts.total);
-
-  addDataToChart(dataFlowChart, {
-    x: moment().format("YYYY-MM-DD hh:mm:ss"),
-    y: counts.chart.count
-  }, counts.chart.success)
-
 });
 
 //-----------------------------------------------------
@@ -496,8 +426,6 @@ async function startButtonClickHandler() {
 
   //in progress flag
   applicationRunning = true;
-
-  dataFlowChart.data.datasets[0].data = getGraphDummyData();
 
   //invoke main service to start sending messages
   if (settings.direction == "send")

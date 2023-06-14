@@ -120,7 +120,7 @@ async function startPublisher(settings, mainWindow) {
 
 //stop iot hub message send
 async function stopPublisher(settings, mainWindow) {
-
+    console.log("stop invoked");
     _mainWindow = _mainWindow ?? mainWindow;
     _cancellationRequest = true;
     printLogMessage("🚫 Publish stop requested", "info");
