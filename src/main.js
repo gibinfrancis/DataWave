@@ -8,6 +8,7 @@ const path = require("path");
 const os = require("os");
 const fs = require("fs");
 var mainWindow;
+let _abortController;
 
 // Create the browser window.
 const createWindow = () => {
@@ -43,64 +44,193 @@ app.whenReady().then(() => {
   //--------------------------------------------------------------------------------------------------------
 
   //iot hub publisher start handle
-  ipcMain.handle("start:publisher:iothub", async (event, settings) => ioTHubService.startPublisher(settings, mainWindow));
+  ipcMain.handle("start:publisher:iothub", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+
+    const result = await Promise.race([
+      ioTHubService.startPublisher(settings, mainWindow),
+      _abortController.signal
+    ]);
+
+    return result;
+  });
 
   //iot hub publisher stop handle
-  ipcMain.handle("stop:publisher:iothub", async (event, settings) => ioTHubService.stopPublisher(settings, mainWindow));
+  ipcMain.handle("stop:publisher:iothub", async (event, settings) => {
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await ioTHubService.stopPublisher(settings, mainWindow);
+  });
 
   //iot hub subscriber start handle
-  ipcMain.handle("start:subscriber:iothub", async (event, settings) => ioTHubService.startSubscriber(settings, mainWindow));
+  ipcMain.handle("start:subscriber:iothub", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+    try {
+      const result = await Promise.race([
+        ioTHubService.startSubscriber(settings, mainWindow),
+        _abortController.signal
+      ])
+      return result;
+    } catch (ex) { };
+
+  });
 
   //iot hub subscriber stop handle
-  ipcMain.handle("stop:subscriber:iothub", async (event, settings) => ioTHubService.stopSubscriber(settings, mainWindow));
+  ipcMain.handle("stop:subscriber:iothub", async (event, settings) => {
+    console.log("main1");
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await ioTHubService.stopSubscriber(settings, mainWindow);
+  });
 
   //--------------------------------------------------------------------------------------------------------
   //---------------------------------------EVENT HUB--------------------------------------------------------
   //--------------------------------------------------------------------------------------------------------
 
   //event hub publisher start handle
-  ipcMain.handle("start:publisher:eventhub", async (event, settings) => eventHubService.startPublisher(settings, mainWindow));
+  ipcMain.handle("start:publisher:eventhub", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+
+    const result = await Promise.race([
+      eventHubService.startPublisher(settings, mainWindow),
+      _abortController.signal
+    ]);
+
+    return result;
+  });
 
   //event hub publisher stop handle
-  ipcMain.handle("stop:publisher:eventhub", async (event, settings) => eventHubService.stopPublisher(settings, mainWindow));
+  ipcMain.handle("stop:publisher:eventhub", async (event, settings) => {
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await eventHubService.stopPublisher(settings, mainWindow);
+  });
 
   //event hub subscriber start handle
-  ipcMain.handle("start:subscriber:eventhub", async (event, settings) => eventHubService.startSubscriber(settings, mainWindow));
+  ipcMain.handle("start:subscriber:eventhub", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+    try {
+      const result = await Promise.race([
+        eventHubService.startSubscriber(settings, mainWindow),
+        _abortController.signal
+      ])
+      return result;
+    } catch (ex) { };
+
+  });
+
 
   //event hub subscriber stop handle
-  ipcMain.handle("stop:subscriber:eventhub", async (event, settings) => eventHubService.stopSubscriber(settings, mainWindow));
+  ipcMain.handle("stop:subscriber:eventhub", async (event, settings) => {
+    console.log("main1");
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await eventHubService.stopSubscriber(settings, mainWindow);
+  });
 
   //--------------------------------------------------------------------------------------------------------
   //---------------------------------------SERVICE BUS------------------------------------------------------
   //--------------------------------------------------------------------------------------------------------
 
   //service bus publisher start handle
-  ipcMain.handle("start:publisher:servicebus", async (event, settings) => serviceBusService.startPublisher(settings, mainWindow));
+  ipcMain.handle("start:publisher:servicebus", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+
+    const result = await Promise.race([
+      serviceBusService.startPublisher(settings, mainWindow),
+      _abortController.signal
+    ]);
+
+    return result;
+  });
 
   //service bus publisher stop handle
-  ipcMain.handle("stop:publisher:servicebus", async (event, settings) => serviceBusService.stopPublisher(settings, mainWindow));
+  ipcMain.handle("stop:publisher:servicebus", async (event, settings) => {
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await serviceBusService.stopPublisher(settings, mainWindow);
+  });
 
   //service bus subscriber start handle
-  ipcMain.handle("start:subscriber:servicebus", async (event, settings) => serviceBusService.startSubscriber(settings, mainWindow));
+  ipcMain.handle("start:subscriber:servicebus", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+    try {
+      const result = await Promise.race([
+        serviceBusService.startSubscriber(settings, mainWindow),
+        _abortController.signal
+      ])
+      return result;
+    } catch (ex) { };
+
+  });
 
   //service bus subscriber stop handle
-  ipcMain.handle("stop:subscriber:servicebus", async (event, settings) => serviceBusService.stopSubscriber(settings, mainWindow));
+  ipcMain.handle("stop:subscriber:servicebus", async (event, settings) => {
+    console.log("main1");
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await serviceBusService.stopSubscriber(settings, mainWindow);
+  });
 
   //--------------------------------------------------------------------------------------------------------
   //---------------------------------------MQTT-------------------------------------------------------------
   //--------------------------------------------------------------------------------------------------------
 
   //mqtt publisher start handle
-  ipcMain.handle("start:publisher:mqtt", async (event, settings) => mqttService.startPublisher(settings, mainWindow));
+  ipcMain.handle("start:publisher:mqtt", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+
+    const result = await Promise.race([
+      mqttService.startPublisher(settings, mainWindow),
+      _abortController.signal
+    ]);
+
+    return result;
+  });
 
   //mqtt publisher stop handle
-  ipcMain.handle("stop:publisher:mqtt", async (event, settings) => mqttService.stopPublisher(settings, mainWindow));
+  ipcMain.handle("stop:publisher:mqtt", async (event, settings) => {
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await mqttService.stopPublisher(settings, mainWindow);
+  });
 
   //mqtt subscriber start handle
-  ipcMain.handle("start:subscriber:mqtt", async (event, settings) => mqttService.startSubscriber(settings, mainWindow));
+  ipcMain.handle("start:subscriber:mqtt", async (event, settings) => {
+    _abortController = new AbortController(); // Create an AbortController for the publisher
+    try {
+      const result = await Promise.race([
+        mqttService.startSubscriber(settings, mainWindow),
+        _abortController.signal
+      ])
+      return result;
+    } catch (ex) { };
+
+  });
 
   //mqtt subscriber stop handle
-  ipcMain.handle("stop:subscriber:mqtt", async (event, settings) => mqttService.stopSubscriber(settings, mainWindow));
+  ipcMain.handle("stop:subscriber:mqtt", async (event, settings) => {
+    console.log("main1");
+    if (_abortController) {
+      _abortController.abort(); // Abort the publisher
+    }
+
+    await mqttService.stopSubscriber(settings, mainWindow);
+  });
 
 
   //--------------------------------------------------------------------------------------------------------
