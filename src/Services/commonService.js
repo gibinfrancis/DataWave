@@ -256,8 +256,6 @@ function generateRandomDouble(min, max) {
 
 //delay function to wait for some time
 function delay(sec) {
-  if (sec == 0)
-    sec = .2;
   return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
