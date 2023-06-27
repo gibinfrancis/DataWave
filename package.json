@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
     "make-zip": "electron-forge make --targets @electron-forge/maker-zip",
-    "make-exe": "electron-forge make"
+    "make": "electron-forge make"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
     "@electron-forge/maker-rpm": "^6.1.1",
     "@electron-forge/maker-squirrel": "^6.1.1",
     "@electron-forge/maker-zip": "^6.1.1",
-    "electron": "^23.1.4"
+    "electron": "^14.2.9"
   },
   "dependencies": {
     "@azure/event-hubs": "^5.9.0",
