@@ -1,3 +1,5 @@
+
+require("electron-squirrel-startup");
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const ioTHubService = require("./services/IoTHubService.js");
 const eventHubService = require("./services/EventHubService.js");
@@ -9,6 +11,11 @@ const os = require("os");
 const fs = require("fs");
 var mainWindow;
 let _abortController;
+
+// run this as early in the main process as possible
+if (require('electron-squirrel-startup'))
+  app.quit();
+
 
 // Create the browser window.
 const createWindow = () => {
