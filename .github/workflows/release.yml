@@ -1,5 +1,5 @@
 # Workflow for building and deploying a Jekyll site to GitHub Pages
-name: Release build
+name: Build and Release Package
 
 on:
   push:
@@ -56,6 +56,14 @@ jobs:
           name: Release ${{ github.event.inputs.tag }}
           path: out/make/*
 
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
   releasezip:
     name: Release Zip
     runs-on: windows-latest
@@ -66,6 +74,20 @@ jobs:
         with:
           name: Release ${{ github.event.inputs.tag }}
           path: dist
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+            echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v} # RepositoryName-v1.0.0
+            value=`cat release_url/release_url.txt`
+            echo ::set-output name=upload_url::$value
+        env:
+            TAG_REF_NAME: ${{ github.ref }}
+            REPOSITORY_NAME: ${{ github.repository }}
 
       - name: Upload Release Asset
         id: upload-release-asset 
@@ -73,7 +95,7 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }} 
+            upload_url: ${{ steps.get_release_info.outputs.upload_url }}
             asset_path: dist/zip/win32/x64/datawave-win32-x64-${{ github.event.inputs.tag }}.zip
             asset_name: datawave-zip-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
@@ -89,6 +111,21 @@ jobs:
           name: Release ${{ github.event.inputs.tag }}
           path: dist
 
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+            echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v} # RepositoryName-v1.0.0
+            value=`cat release_url/release_url.txt`
+            echo ::set-output name=upload_url::$value
+        env:
+            TAG_REF_NAME: ${{ github.ref }}
+            REPOSITORY_NAME: ${{ github.repository }}
+            
       - run: tar.exe -a -c -f datawave-squirrel-${{ github.event.inputs.tag }}x64.zip dist/squirrel.windows/x64
 
       - name: Upload Release Asset
@@ -97,7 +134,7 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }} 
+            upload_url: ${{ steps.get_release_info.outputs.upload_url }}
             asset_path: dist/squirrel.windows/x64/datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
             asset_name: datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
             asset_content_type: application/zip
