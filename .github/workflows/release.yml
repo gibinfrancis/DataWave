@@ -40,6 +40,8 @@ jobs:
       - run: npm run package
       
       - run: npm run make
+      
+      - run: ls
 
       - name: Create Release
         id: create_release
