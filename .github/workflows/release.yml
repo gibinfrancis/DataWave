@@ -36,6 +36,8 @@ jobs:
       
       - run: npm audit fix --force
         continue-on-error: true
+        
+      - run: ls
       
       - run: npm package
       
