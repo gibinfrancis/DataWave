@@ -88,7 +88,9 @@ jobs:
             asset_name: datawave-zip-x64-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
             
-      - run: tar.exe -a -c -f datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip dist/squirrel.windows/x64
+      - run: |
+         cd dist/squirrel.windows/
+         tar.exe -a -c -f datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip /x64
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
