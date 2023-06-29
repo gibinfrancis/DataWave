@@ -59,15 +59,15 @@ jobs:
           name: Release ${{ github.event.inputs.tag }}
           path: dist
 
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ github.event.inputs.tag }}
-      #     release_name: Release ${{ github.event.inputs.tag }}
-      #     prerelease: ${{ github.event.inputs.prerelease }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          release_name: Release ${{ github.event.inputs.tag }}
+          prerelease: ${{ github.event.inputs.prerelease }}
 
       - run:  |
           ls
@@ -80,7 +80,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: dist/zip/win32/x64/datawave-win32-x64-${{ github.event.inputs.tag }}.zip
+            asset_path: ./dist/zip/win32/x64/datawave-win32-x64-${{ github.event.inputs.tag }}.zip
             asset_name: datawave-zip-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
             
@@ -92,7 +92,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: dist/squirrel.windows/x64/datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
+            asset_path: ./dist/squirrel.windows/x64/datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
             asset_name: datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
             asset_content_type: application/zip
     
