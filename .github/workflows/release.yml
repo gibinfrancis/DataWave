@@ -12,7 +12,7 @@ on:
       tag:
         description: 'Release Version'
         required: true
-        default : "v1.0.0"
+        default : "1.0.0"
         type: string
       prerelease:
         description: 'Is Pre-Release'
@@ -44,7 +44,7 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: Release ${{ github.event.inputs.tag }}
+          name: Release-${{ github.event.inputs.tag }}
           path: out/make/*
 
 
@@ -56,7 +56,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v2
         with:
-          name: Release ${{ github.event.inputs.tag }}
+          name: Release-${{ github.event.inputs.tag }}
           path: dist
 
       - name: Create Release
@@ -66,14 +66,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.event.inputs.tag }}
-          release_name: Release ${{ github.event.inputs.tag }}
+          release_name: Release-${{ github.event.inputs.tag }}
           prerelease: ${{ github.event.inputs.prerelease }}
 
-      - run:  |
-          ls
-          cd dist/
-          ls 
-      
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -81,10 +76,10 @@ jobs:
         with:
             upload_url: ${{ steps.create_release.outputs.upload_url }}
             asset_path: ./dist/zip/win32/x64/datawave-win32-x64-${{ github.event.inputs.tag }}.zip
-            asset_name: datawave-zip-${{ github.event.inputs.tag }}.zip
+            asset_name: datawave-zip-x64-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
             
-      - run: tar.exe -a -c -f datawave-squirrel-${{ github.event.inputs.tag }}x64.zip dist/squirrel.windows/x64
+      - run: tar.exe -a -c -f datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip dist/squirrel.windows/x64
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -92,7 +87,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: ./dist/squirrel.windows/x64/datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
-            asset_name: datawave-squirrel-${{ github.event.inputs.tag }}x64.zip
+            asset_path: ./dist/squirrel.windows/x64/datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip
+            asset_name: datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
     
