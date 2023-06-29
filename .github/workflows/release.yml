@@ -19,6 +19,11 @@ on:
         required: true
         default : false
         type: boolean
+      details:
+        description: 'Release Details'
+        required: false
+        default : ""
+        type: string
 
 jobs:
   build:
@@ -68,6 +73,10 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           release_name: Release-${{ github.event.inputs.tag }}
           prerelease: ${{ github.event.inputs.prerelease }}
+          body: |
+            Changes in this Release
+            ----------------------------------------------------
+            ${{ github.event.inputs.details }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -87,7 +96,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: ./dist/squirrel.windows/x64/datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip
+            asset_path: ./dist/squirrel.windows/datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip
             asset_name: datawave-squirrel-x64-${{ github.event.inputs.tag }}.zip
             asset_content_type: application/zip
     
