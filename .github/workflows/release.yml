@@ -27,25 +27,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.15.0
+      # - name: Use Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 18.15.0
      
-      - run: npm install
+      # - run: npm install
       
-      - run: npm audit fix --force
-        continue-on-error: true
+      # - run: npm audit fix --force
+      #   continue-on-error: true
             
-      - run: npm run package
+      # - run: npm run package
       
-      - run: npm run make      
+      # - run: npm run make      
           
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: Release ${{ github.event.inputs.tag }}
-          path: out/make/*
+      # - name: Upload a Build Artifact
+      #   uses: actions/upload-artifact@v3.1.2
+      #   with:
+      #     name: Release ${{ github.event.inputs.tag }}
+      #     path: out/make/*
 
 
   release:
@@ -59,17 +59,20 @@ jobs:
           name: Release ${{ github.event.inputs.tag }}
           path: dist
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          release_name: Release ${{ github.event.inputs.tag }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.event.inputs.tag }}
+      #     release_name: Release ${{ github.event.inputs.tag }}
+      #     prerelease: ${{ github.event.inputs.prerelease }}
 
-      - run:  ls 
+      - run:  |
+          ls
+          cd dist/
+          ls 
       
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
